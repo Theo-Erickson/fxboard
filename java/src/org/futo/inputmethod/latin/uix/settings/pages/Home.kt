@@ -117,6 +117,15 @@ val HomeScreenLite = UserSettingsMenu(
             icon = R.drawable.themes
         ),
 
+        // Fork: entry point for the fork's own settings
+        userSettingNavigationItem(
+            title = ForkExtrasMenu.title,
+            subtitle = R.string.fork_settings_subtitle,
+            style = NavigationItemStyle.HomePrimary,
+            navigateTo = ForkExtrasMenu.navPath,
+            icon = R.drawable.keyboard
+        ),
+
         //if(!isPaid) {
         userSettingNavigationItem(
             title = R.string.payment_screen_short_title,

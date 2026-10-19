@@ -137,6 +137,17 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final int SPACEBAR_MODE_CURSOR = 1;
     public static final int SPACEBAR_MODE_LANGUAGE = 2;
 
+    // Fork additions (Theo's FUTO fork). Kept together so upstream merges stay simple.
+    /** Dragging the spacebar up or down moves the cursor between lines. */
+    public static final String PREF_SPACEBAR_VERTICAL_CURSOR = "pref_fork_spacebar_vertical_cursor";
+    /** Asks the system to hide the IME navigation bar (collapse arrow + keyboard switcher). */
+    public static final String PREF_HIDE_IME_NAV_BAR = "pref_fork_hide_ime_nav_bar";
+    /** Keypress effect toggles, drawn by KeyEffectsDrawable on top of the keys. */
+    public static final String PREF_EFFECT_RIPPLE = "pref_fork_effect_ripple";
+    public static final String PREF_EFFECT_GLOW = "pref_fork_effect_glow";
+    public static final String PREF_EFFECT_PARTICLES = "pref_fork_effect_particles";
+    public static final String PREF_EFFECT_SPACE_TRAIL = "pref_fork_effect_space_trail";
+
     public static final String PREF_BACKSPACE_MODE_HOLD = "pref_backspace_mode_hold";
     public static final String PREF_BACKSPACE_MODE = "pref_backspace_mode";
     public static final int BACKSPACE_MODE_CHARACTERS = 0; // Long-press backspace and swipe backspace removes just characters

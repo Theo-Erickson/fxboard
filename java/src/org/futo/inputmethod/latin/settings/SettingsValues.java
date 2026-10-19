@@ -108,6 +108,13 @@ public class SettingsValues {
     public final boolean mBackspaceUndoesAutocorrect;
     public final int mSpacebarSwipeMode;
     public final int mSpacebarHoldMode;
+    // Fork additions, see Settings.PREF_SPACEBAR_VERTICAL_CURSOR and friends
+    public final boolean mSpacebarVerticalCursor;
+    public final boolean mHideImeNavBar;
+    public final boolean mEffectRipple;
+    public final boolean mEffectGlow;
+    public final boolean mEffectParticles;
+    public final boolean mEffectSpaceTrail;
     public final int mBackspaceMode;
     public final int mBackspaceModeHold;
     public final int mNumberRowMode;
@@ -209,6 +216,14 @@ public class SettingsValues {
                 legacySpacebarMode == Settings.SPACEBAR_MODE_SWIPE_LANGUAGE_LEGACY ? Settings.SPACEBAR_MODE_LANGUAGE : Settings.SPACEBAR_MODE_CURSOR);
         mSpacebarHoldMode = prefs.getInt(Settings.PREF_SPACEBAR_HOLD_MODE,
                 legacySpacebarMode == Settings.SPACEBAR_MODE_SWIPE_CURSOR_LEGACY ? Settings.SPACEBAR_MODE_LANGUAGE : Settings.SPACEBAR_MODE_CURSOR);
+
+        // Fork additions: vertical cursor and nav bar hiding default on, effects default off
+        mSpacebarVerticalCursor = prefs.getBoolean(Settings.PREF_SPACEBAR_VERTICAL_CURSOR, true);
+        mHideImeNavBar = prefs.getBoolean(Settings.PREF_HIDE_IME_NAV_BAR, true);
+        mEffectRipple = prefs.getBoolean(Settings.PREF_EFFECT_RIPPLE, false);
+        mEffectGlow = prefs.getBoolean(Settings.PREF_EFFECT_GLOW, false);
+        mEffectParticles = prefs.getBoolean(Settings.PREF_EFFECT_PARTICLES, false);
+        mEffectSpaceTrail = prefs.getBoolean(Settings.PREF_EFFECT_SPACE_TRAIL, false);
 
         mBackspaceMode = prefs.getInt(Settings.PREF_BACKSPACE_MODE, Settings.BACKSPACE_MODE_CHARACTERS);
         mBackspaceModeHold = prefs.getInt(Settings.PREF_BACKSPACE_MODE_HOLD, mBackspaceMode);
