@@ -1,5 +1,15 @@
 # FUTO Keyboard
 
+> **This is a modified, unofficial fork of FUTO Keyboard.** It is not made, endorsed, or supported by FUTO. Please report problems with this build here, not to FUTO. It is distributed free of charge for non-commercial use under the [FUTO Source First License 1.1](LICENSE.md), and FUTO's payment features are left intact.
+>
+> **Changes in this fork**
+> - Drag the spacebar up or down to move the cursor between lines (alongside the normal left and right drag)
+> - Option to hide the keyboard navigation bar (down arrow and keyboard switcher) on Android 15 and newer
+> - Optional keypress effects: ripple, key glow, particles, and a spacebar drag trail
+> - Installs alongside official FUTO Keyboard as "FUTO Keyboard (Theo Fork)"
+>
+> All fork options live in Settings, under **Fork extras**. Download the latest APK from this repository's Releases page.
+
 The goal is to make a good modern keyboard that stays offline and doesn't spy on you. This keyboard is a fork of [LatinIME, The Android Open-Source Keyboard](https://android.googlesource.com/platform/packages/inputmethods/LatinIME), with significant changes made to it.
 
 Check out the [FUTO Keyboard website](https://keyboard.futo.tech/) for downloads and more information.

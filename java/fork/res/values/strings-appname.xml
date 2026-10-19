@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fork: distinct names so this build is easy to tell apart from official FUTO Keyboard. -->
+<resources>
+    <string name="english_ime_name">FUTO Keyboard (Theo Fork)</string>
+    <string name="spell_checker_service_name">FUTO Spell Checker (Theo Fork)</string>
+    <string name="english_ime_settings">FUTO Keyboard Settings (Theo Fork)</string>
+    <string name="android_spell_checker_settings">FUTO Spell Checker Settings (Theo Fork)</string>
+</resources>

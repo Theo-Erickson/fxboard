@@ -306,6 +306,22 @@ android {
             buildConfigField "String", "PAYMENT_PRICE", "FUTOPAY_PRICE"
         }
 
+        // Fork: Theo's modified build. A separate application ID lets it install alongside
+        // official FUTO Keyboard. Payment screens stay exactly as in stable, as the license requires.
+        // Update checking is off so it never prompts to replace itself with an official build.
+        fork {
+            dimension "buildType"
+            applicationIdSuffix ".fork"
+            versionNameSuffix "-fork"
+
+            buildConfigField "boolean", "IS_PLAYSTORE_BUILD", "false"
+            buildConfigField "boolean", "UPDATE_CHECKING", "false"
+            buildConfigField "boolean", "UPDATE_CHECKING_NETWORK", "false"
+            buildConfigField "String", "BRANCH", "\"${getBranch()}\""
+
+            buildConfigField "String", "PAYMENT_PRICE", "FUTOPAY_PRICE"
+        }
+
         playstore {
             dimension "buildType"
             applicationIdSuffix ".playstore"
@@ -348,6 +364,13 @@ android {
         stable {
             java.srcDirs = ['common/src', 'java/src', 'java/stable/java']
             manifest.srcFile 'java/stable/AndroidManifest.xml'
+        }
+
+        // Fork: same sources as stable, plus a resource overlay that renames the app
+        fork {
+            java.srcDirs = ['common/src', 'java/src', 'java/stable/java']
+            manifest.srcFile 'java/stable/AndroidManifest.xml'
+            res.srcDirs = ['java/fork/res']
         }
 
         unstable {
