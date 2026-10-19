@@ -97,6 +97,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
     private static PointerTrackerParams sParams;
     private static final int sPointerStep = (int)(16.0 * Resources.getSystem().getDisplayMetrics().density);
     private static final int sPointerBigStep = (int)(32.0 * Resources.getSystem().getDisplayMetrics().density);
+    // Fork: distance per line when dragging the spacebar vertically. Smaller than a key row,
+    // because the spacebar sits near the bottom edge and leaves little room to drag down.
+    private static final int sPointerVerticalStep = (int)(24.0 * Resources.getSystem().getDisplayMetrics().density);
     private static final int sPointerHugeStep = Integer.min(
             (int)(64.0 * Resources.getSystem().getDisplayMetrics().density),
             Resources.getSystem().getDisplayMetrics().widthPixels * 3 / 2
@@ -993,10 +996,26 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                             mProgressReported = true;
                             mCursorMoved = true;
                         }
-                    } else if(steps != 0) {
-                        mCursorMoved = true;
-                        mStartX += steps * pointerStep;
-                        sListener.onMovePointer(steps);
+                    } else {
+                        // Fork: vertical spacebar cursor. Whichever axis the finger has travelled
+                        // further on wins each step, and drift on the other axis is discarded, so a
+                        // mostly-vertical drag does not nudge the cursor sideways (and vice versa).
+                        final int verticalSteps = settingsValues.mSpacebarVerticalCursor
+                                ? (y - mStartY) / sPointerVerticalStep : 0;
+                        final boolean verticalWins = verticalSteps != 0
+                                && Math.abs(y - mStartY) > Math.abs(x - mStartX);
+
+                        if (verticalWins) {
+                            mCursorMoved = true;
+                            mStartY += verticalSteps * sPointerVerticalStep;
+                            mStartX = x;
+                            sListener.onMoveVerticalPointer(verticalSteps);
+                        } else if(steps != 0) {
+                            mCursorMoved = true;
+                            mStartX += steps * pointerStep;
+                            mStartY = y;
+                            sListener.onMovePointer(steps);
+                        }
                     }
                 }
 

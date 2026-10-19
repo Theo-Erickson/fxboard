@@ -103,6 +103,13 @@ public interface KeyboardActionListener {
 
     public void onMovePointer(int steps);
     public void onMoveDeletePointer(int steps);
+
+    /**
+     * Fork: moves the cursor between lines while dragging the spacebar vertically.
+     * @param steps negative moves up, positive moves down, one line per step.
+     */
+    default void onMoveVerticalPointer(int steps) {}
+
     public void onUpWithDeletePointerActive();
     public void onUpWithPointerActive();
     public void onMovingCursorLockEvent(boolean canMoveCursor);

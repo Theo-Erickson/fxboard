@@ -632,6 +632,28 @@ public class LatinIMELegacy implements KeyboardActionListener,
         ).onMovePointer(steps, false, null);
     }
 
+    // Fork: called from PointerTracker while the spacebar is dragged up or down.
+    // Sends one DPAD key per line, through the same path the arrow-key actions use,
+    // so composing text and the expected cursor position stay consistent.
+    @Override
+    public void onMoveVerticalPointer(int steps) {
+        if (steps == 0) return;
+
+        final int keyCode = steps < 0 ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN;
+        for (int i = 0; i < Math.abs(steps); i++) {
+            // Mirrors UixActionKeyboardManager.sendKeyEvent, which the arrow-key actions use
+            final Event event = Event.createDownUpKeyEvent(keyCode, 0);
+            mImeManager.getActiveIME(mSettings.getCurrent()).onEvent(event);
+        }
+
+        // Same tick the horizontal drag uses, so both directions feel identical
+        final MainKeyboardView view = mKeyboardSwitcher.getMainKeyboardView();
+        if (view != null && mSettings.getCurrent().mVibrateOn
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            view.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
+        }
+    }
+
     @Override
     public void onMoveDeletePointer(int steps) {
         mImeManager.getActiveIME(
