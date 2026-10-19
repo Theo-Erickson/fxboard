@@ -629,6 +629,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         onSizeMaybeUpdated()
         imeManager.onStartInput()
         latinIMELegacy.onStartInputView(info, restarting)
+        applyImeNavBarVisibility()
         lifecycleScope.launch { uixManager.showUpdateNoticeIfNeeded() }
         updateColorsIfDynamicChanged()
         uixManager.updateEmojiTranslationsIfNeeded()
@@ -655,6 +656,28 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         super.onWindowShown()
         latinIMELegacy.onWindowShown()
         updateColorsIfDynamicChanged()
+        applyImeNavBarVisibility()
+    }
+
+    /**
+     * Fork: hides or restores the system-provided IME navigation bar, which holds the
+     * collapse (down arrow) button and the keyboard switcher button in gesture navigation.
+     *
+     * Android 15+ lets an IME request this by hiding captionBar insets on its own window.
+     * On older versions the request is simply ignored, so this is a no-op there.
+     * The keyboard's bottom padding follows the remaining system bar insets automatically,
+     * so the keys drop down into the freed space and the gesture handle keeps working.
+     */
+    private fun applyImeNavBarVisibility() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return
+
+        val controller = window.window?.insetsController ?: return
+        val captionBar = android.view.WindowInsets.Type.captionBar()
+        if (Settings.getInstance().current.mHideImeNavBar) {
+            controller.hide(captionBar)
+        } else {
+            controller.show(captionBar)
+        }
     }
 
     override fun onWindowHidden() {
