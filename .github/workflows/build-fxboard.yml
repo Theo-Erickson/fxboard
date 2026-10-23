@@ -65,7 +65,10 @@ jobs:
           # Base the name on the latest upstream FUTO tag, plus this workflow's run number.
           # Forks don't get FUTO's tags, so fetch them from upstream first.
           git fetch --no-recurse-submodules --tags https://github.com/futo-org/android-keyboard.git
-          BASE="$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.0)"
+          # Skip FXboard's own release tags and FUTO's release candidates, and drop the "v"
+          # some older FUTO tags have, so names read like 0.1.30-r4.
+          BASE="$(git describe --tags --abbrev=0 --exclude 'fxboard-*' --exclude '*-rc*' 2>/dev/null || echo 0.0.0)"
+          BASE="${BASE#v}"
           echo "VERSION_NAME=${BASE}-r${{ github.run_number }}" >> "$GITHUB_ENV"
           # Run number only ever increases, so each build installs over the last
           echo "VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
