@@ -1,19 +1,19 @@
-# Fork: builds the "fork" flavor APK on GitHub Actions.
+# FXboard: builds the "fxboard" flavor APK on GitHub Actions.
 #
 # - Pull requests: builds the APK and attaches it to the run, so a change can be tried
 #   on the phone before it is merged.
-# - Pushes to master (i.e. a merged PR): builds, then publishes a GitHub Release with the
-#   APK attached. That release page is where to download and install from.
+# - Pushes to the fxboard branch (i.e. a merged PR): builds, then publishes a GitHub Release
+#   with the APK attached. master only mirrors FUTO's upstream and never builds here. That release page is where to download and install from.
 #
 # Signing uses a private keystore stored in repository secrets, so every build has the same
 # signature and installs as an update over the previous one. Never use the public debug
 # keystore for builds you install: a keyboard sees everything you type.
 
-name: Build fork APK
+name: Build FXboard APK
 
 on:
   push:
-    branches: [master]
+    branches: [fxboard]
   pull_request:
   workflow_dispatch:
 
@@ -86,28 +86,28 @@ jobs:
           } > keystore.properties
 
       - name: Build APK
-        run: ./gradlew assembleForkRelease --stacktrace
+        run: ./gradlew assembleFxboardRelease --stacktrace
 
       - name: Rename APK
         run: |
           mkdir -p out
-          cp build/outputs/apk/fork/release/*.apk "out/futo-keyboard-fork-${VERSION_NAME}.apk"
+          cp build/outputs/apk/fxboard/release/*.apk "out/fxboard-${VERSION_NAME}.apk"
           ls -la out
 
       - name: Upload APK to the run
         uses: actions/upload-artifact@v4
         with:
-          name: futo-keyboard-fork-${{ env.VERSION_NAME }}
+          name: fxboard-${{ env.VERSION_NAME }}
           path: out/*.apk
 
       - name: Publish release
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: fork-r${{ github.run_number }}
-          name: FUTO Keyboard Fork ${{ env.VERSION_NAME }}
+          tag_name: fxboard-r${{ github.run_number }}
+          name: FXboard ${{ env.VERSION_NAME }}
           target_commitish: ${{ github.sha }}
           body: |
-            Unofficial modified build of FUTO Keyboard. Not made or supported by FUTO.
+            FXboard, an unofficial modified build of FUTO Keyboard. Not made, endorsed or supported by FUTO.
             Built from ${{ github.sha }}.
           files: out/*.apk

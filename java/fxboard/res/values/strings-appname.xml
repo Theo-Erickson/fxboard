@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FXboard: its own names, so it is easy to tell apart from official FUTO Keyboard. -->
+<resources>
+    <string name="english_ime_name">FXboard</string>
+    <string name="spell_checker_service_name">FXboard Spell Checker</string>
+    <string name="english_ime_settings">FXboard Settings</string>
+    <string name="android_spell_checker_settings">FXboard Spell Checker Settings</string>
+</resources>

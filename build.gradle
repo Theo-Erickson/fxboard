@@ -306,13 +306,14 @@ android {
             buildConfigField "String", "PAYMENT_PRICE", "FUTOPAY_PRICE"
         }
 
-        // Fork: Theo's modified build. A separate application ID lets it install alongside
-        // official FUTO Keyboard. Payment screens stay exactly as in stable, as the license requires.
-        // Update checking is off so it never prompts to replace itself with an official build.
-        fork {
+        // FXboard: Theo's modified build. Its own application ID, outside FUTO's namespace, lets it
+        // install alongside official FUTO Keyboard. Payment screens stay exactly as in stable, as the
+        // license requires. Update checking is off so it never prompts to replace itself with an
+        // official build.
+        fxboard {
             dimension "buildType"
-            applicationIdSuffix ".fork"
-            versionNameSuffix "-fork"
+            applicationId "com.theo.fxboard"
+            versionNameSuffix "-fxboard"
 
             buildConfigField "boolean", "IS_PLAYSTORE_BUILD", "false"
             buildConfigField "boolean", "UPDATE_CHECKING", "false"
@@ -366,11 +367,13 @@ android {
             manifest.srcFile 'java/stable/AndroidManifest.xml'
         }
 
-        // Fork: same sources as stable, plus a resource overlay that renames the app
-        fork {
-            java.srcDirs = ['common/src', 'java/src', 'java/stable/java']
+        // FXboard: stable's manifest, plus a resource overlay that renames the app. Its own
+        // application class has no crash reporter, so reports from this modified build never
+        // go to FUTO (stable's emails keyboard@futo.org).
+        fxboard {
+            java.srcDirs = ['common/src', 'java/src', 'java/fxboard/java']
             manifest.srcFile 'java/stable/AndroidManifest.xml'
-            res.srcDirs = ['java/fork/res']
+            res.srcDirs = ['java/fxboard/res']
         }
 
         unstable {
