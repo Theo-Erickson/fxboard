@@ -2,7 +2,7 @@
 <!-- FXboard additions. Not translated upstream, so marked non-translatable. -->
 <resources>
     <string name="fork_settings_title" translatable="false">FXboard extras</string>
-    <string name="fork_settings_subtitle" translatable="false">Unofficial modified build: spacebar, navigation bar and keypress effects</string>
+    <string name="fork_settings_subtitle" translatable="false">Unofficial modified build: spacebar and navigation bar</string>
 
     <string name="fork_settings_cursor_section" translatable="false">Cursor and navigation bar</string>
     <string name="fork_spacebar_vertical_title" translatable="false">Drag spacebar up and down to change lines</string>
@@ -10,7 +10,7 @@
     <string name="fork_hide_nav_bar_title" translatable="false">Hide keyboard navigation bar</string>
     <string name="fork_hide_nav_bar_subtitle" translatable="false">Removes the down arrow and keyboard switcher below the keys. Requires Android 15 or newer.</string>
 
-    <string name="fork_settings_effects_section" translatable="false">Keypress effects</string>
+    <!-- Legacy effects, shown on the Keyboard effects page until keyfx replaces them -->
     <string name="fork_effect_ripple_title" translatable="false">Ripple</string>
     <string name="fork_effect_ripple_subtitle" translatable="false">A ring expands from where you touch</string>
     <string name="fork_effect_glow_title" translatable="false">Key glow</string>
@@ -21,4 +21,21 @@
     <string name="fork_effect_trail_subtitle" translatable="false">A glowing trail follows your finger while dragging the cursor</string>
 
     <string name="fork_modified_notice" translatable="false">FXboard is an unofficial, modified version of FUTO Keyboard. It is not made, endorsed or supported by FUTO. Please report issues with FXboard to github.com/Theo-Erickson/fxboard, not to FUTO.</string>
+
+    <string name="keyfx_settings_title" translatable="false">Keyboard effects</string>
+    <string name="keyfx_settings_subtitle" translatable="false">Key pops, floating letters, swipe trails and more</string>
+    <string name="keyfx_not_connected" translatable="false">keyfx isn\'t connected to the keyboard yet, so these settings are saved but don\'t change anything until a later update. The legacy effects at the bottom still work.</string>
+    <string name="keyfx_test_field_hint" translatable="false">Type or swipe here to try your settings</string>
+    <string name="keyfx_import" translatable="false">Import</string>
+    <string name="keyfx_reset" translatable="false">Reset</string>
+    <string name="keyfx_import_title" translatable="false">Import from the keyfx lab</string>
+    <string name="keyfx_import_message" translatable="false">In the lab, tap Export, copy everything and paste it here. Settings FXboard doesn\'t have are skipped.</string>
+    <string name="keyfx_import_hint" translatable="false">Paste the lab\'s export here</string>
+    <string name="keyfx_import_done" translatable="false">Imported %d settings</string>
+    <string name="keyfx_import_failed" translatable="false">Couldn\'t read that: %s</string>
+    <string name="keyfx_reset_title" translatable="false">Reset all effects?</string>
+    <string name="keyfx_reset_message" translatable="false">Every keyfx setting goes back to its default. Legacy effects aren\'t changed.</string>
+    <string name="keyfx_legacy_section" translatable="false">Legacy effects</string>
+    <string name="keyfx_legacy_note" translatable="false">The original FXboard effects. keyfx replaces them in a later update.</string>
+    <string name="keyfx_animations_note" translatable="false">Effects turn off when Android\'s \"Remove animations\" setting is on.</string>
 </resources>

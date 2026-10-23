@@ -351,7 +351,8 @@ android {
                     translationsWithoutEngValues('translations/core-ign'),
                     'java/res-large'
             ]
-            java.srcDirs = ['common/src', 'java/src']
+            // FXboard: keyfx, the effects library, keeps its own folder and Apache-2.0 license
+            java.srcDirs = ['common/src', 'java/src', 'keyfx/src/main/java']
             manifest.srcFile 'java/AndroidManifest.xml'
             assets.srcDirs = ['java/assets']
         }

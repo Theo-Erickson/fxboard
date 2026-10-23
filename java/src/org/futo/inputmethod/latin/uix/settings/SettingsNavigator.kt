@@ -47,6 +47,8 @@ import org.futo.inputmethod.latin.uix.settings.pages.LanguagesScreen
 import org.futo.inputmethod.latin.uix.settings.pages.LongPressMenu
 import org.futo.inputmethod.latin.uix.settings.pages.MiscMenu
 import org.futo.inputmethod.latin.uix.settings.pages.ForkExtrasMenu
+import org.futo.inputmethod.latin.uix.settings.pages.KeyFxSettingsNavPath
+import org.futo.inputmethod.latin.uix.settings.pages.KeyFxSettingsScreen
 import org.futo.inputmethod.latin.uix.settings.pages.NumberRowSettingMenu
 import org.futo.inputmethod.latin.uix.settings.pages.PaymentScreen
 import org.futo.inputmethod.latin.uix.settings.pages.PaymentThankYouScreen
@@ -110,7 +112,7 @@ val SettingsMenus = listOf(
     ActionsScreen,
     HelpMenu,
     MiscMenu,
-    ForkExtrasMenu, // Fork: spacebar, nav bar and effects settings
+    ForkExtrasMenu, // Fork: spacebar and nav bar settings
     CreditsScreenLite,
     IMESettingsMenu
 ) + AllActions.mapNotNull { it.settingsMenu } + SettingsByLanguage.values
@@ -174,6 +176,7 @@ fun SettingsNavigator(
             composable("keyboardAndTyping") { KeyboardAndTypingScreen(navController) }
             composable("resize") { ResizeScreen(navController) }
             composable("themes") { ThemeScreen(navController) }
+            composable(KeyFxSettingsNavPath) { KeyFxSettingsScreen() } // FXboard: keyfx effects
             composable("developer") { DeveloperScreen(navController) }
             composable("devtextedit") { DevEditTextVariationsScreen(navController) }
             composable("devbuggytextedit") { BuggyTextEditVariations(navController) }

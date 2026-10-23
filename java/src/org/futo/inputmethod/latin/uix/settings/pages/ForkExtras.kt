@@ -39,34 +39,5 @@ val ForkExtrasMenu = UserSettingsMenu(
             key = Settings.PREF_HIDE_IME_NAV_BAR,
             default = { remember { Settings.getInstance().current.mHideImeNavBar } },
         ),
-
-        userSettingDecorationOnly {
-            ScreenTitle(stringResource(R.string.fork_settings_effects_section))
-        },
-
-        userSettingToggleSharedPrefs(
-            title = R.string.fork_effect_ripple_title,
-            subtitle = R.string.fork_effect_ripple_subtitle,
-            key = Settings.PREF_EFFECT_RIPPLE,
-            default = { false },
-        ),
-        userSettingToggleSharedPrefs(
-            title = R.string.fork_effect_glow_title,
-            subtitle = R.string.fork_effect_glow_subtitle,
-            key = Settings.PREF_EFFECT_GLOW,
-            default = { false },
-        ),
-        userSettingToggleSharedPrefs(
-            title = R.string.fork_effect_particles_title,
-            subtitle = R.string.fork_effect_particles_subtitle,
-            key = Settings.PREF_EFFECT_PARTICLES,
-            default = { false },
-        ),
-        userSettingToggleSharedPrefs(
-            title = R.string.fork_effect_trail_title,
-            subtitle = R.string.fork_effect_trail_subtitle,
-            key = Settings.PREF_EFFECT_SPACE_TRAIL,
-            default = { false },
-        ),
     )
 )

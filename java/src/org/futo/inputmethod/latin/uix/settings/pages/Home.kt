@@ -126,6 +126,15 @@ val HomeScreenLite = UserSettingsMenu(
             icon = R.drawable.keyboard
         ),
 
+        // FXboard: keyfx effect settings
+        userSettingNavigationItem(
+            title = R.string.keyfx_settings_title,
+            subtitle = R.string.keyfx_settings_subtitle,
+            style = NavigationItemStyle.HomeSecondary,
+            navigateTo = KeyFxSettingsNavPath,
+            icon = R.drawable.activity
+        ),
+
         //if(!isPaid) {
         userSettingNavigationItem(
             title = R.string.payment_screen_short_title,
