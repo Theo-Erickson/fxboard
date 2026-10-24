@@ -32,6 +32,7 @@ import org.futo.inputmethod.engine.IMEHelper;
 import org.futo.inputmethod.engine.general.GeneralIME;
 import org.futo.inputmethod.event.Event;
 import org.futo.inputmethod.event.InputTransaction;
+import org.futo.inputmethod.keyboard.KeyFxHost;
 import org.futo.inputmethod.keyboard.Keyboard;
 import org.futo.inputmethod.keyboard.KeyboardSwitcher;
 import org.futo.inputmethod.latin.BinaryDictionary;
@@ -2641,6 +2642,10 @@ public final class InputLogic {
         if (TextUtils.isEmpty(batchInputText)) {
             return;
         }
+
+        // Fork: the exact word FUTO picked for the swipe, for keyfx's letter hop
+        final KeyFxHost fxHost = KeyFxHost.getActive();
+        if (fxHost != null) fxHost.swipeWord(batchInputText);
 
         rememberSuggestedWords(mConnection.getExpectedSelectionStart(), batchInputText, suggestedWords);
 

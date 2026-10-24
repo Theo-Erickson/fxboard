@@ -59,6 +59,7 @@ import org.futo.inputmethod.accessibility.AccessibilityUtils
 import org.futo.inputmethod.engine.ExpandableSuggestionBarConfiguration
 import org.futo.inputmethod.engine.IMEManager
 import org.futo.inputmethod.engine.general.WordLearner
+import org.futo.inputmethod.keyboard.KeyFxHost
 import org.futo.inputmethod.latin.SuggestedWords.SuggestedWordInfo
 import org.futo.inputmethod.latin.common.Constants
 import org.futo.inputmethod.latin.settings.Settings
@@ -657,6 +658,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         latinIMELegacy.onWindowShown()
         updateColorsIfDynamicChanged()
         applyImeNavBarVisibility()
+        KeyFxHost.active?.show() // Fork: keyfx show animation
     }
 
     /**
@@ -684,6 +686,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         super.onWindowHidden()
         latinIMELegacy.onWindowHidden()
         uixManager.onInputFinishing()
+        KeyFxHost.active?.hidden() // Fork
     }
 
     override fun onUpdateSelection(
@@ -830,6 +833,11 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         cfg: ExpandableSuggestionBarConfiguration
     ) {
         uixManager.setSuggestions(suggestedWords, rtlSubtype, cfg)
+
+        // Fork: FUTO's live guess during a swipe, for keyfx's predicted word highlight
+        if (suggestedWords.mInputStyle == SuggestedWords.INPUT_STYLE_UPDATE_BATCH && !suggestedWords.isEmpty) {
+            KeyFxHost.active?.swipeGuess(suggestedWords.getWord(0))
+        }
 
         // Cache the auto-correction in accessibility code so we can speak it if the user
         // touches a key that will insert it.

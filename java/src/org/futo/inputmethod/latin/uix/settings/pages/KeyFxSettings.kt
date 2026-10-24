@@ -36,7 +36,6 @@ import com.theo.keyfx.FxSettings
 import com.theo.keyfx.KeyFx
 import com.theo.keyfx.Section
 import org.futo.inputmethod.latin.R
-import org.futo.inputmethod.latin.settings.Settings
 import org.futo.inputmethod.latin.uix.SettingsTextEdit
 import org.futo.inputmethod.latin.uix.settings.BottomSpacer
 import org.futo.inputmethod.latin.uix.settings.DropDownPicker
@@ -44,7 +43,6 @@ import org.futo.inputmethod.latin.uix.settings.ScreenTitle
 import org.futo.inputmethod.latin.uix.settings.ScrollableList
 import org.futo.inputmethod.latin.uix.settings.SettingItem
 import org.futo.inputmethod.latin.uix.settings.SettingToggleRaw
-import org.futo.inputmethod.latin.uix.settings.SettingToggleSharedPrefs
 import org.futo.inputmethod.latin.uix.settings.Tip
 import org.futo.inputmethod.latin.uix.theme.Typography
 import org.json.JSONObject
@@ -55,9 +53,11 @@ object KeyFxPrefs {
     /** SharedPreferences file keyfx reads, keys "<sectionId>.<fieldKey>". */
     const val FILE = "keyfx"
 
-    /** FXboard is the fork, so it can do everything keyfx asks of a host. */
-    val CAPS = KeyFx.CAP_KEY_TRANSFORM or KeyFx.CAP_SUGGESTION_STYLE or KeyFx.CAP_POPUP_LAYOUT or
-            KeyFx.CAP_EXACT_WORD or KeyFx.CAP_HIDE_ANIMATION
+    /**
+     * What FXboard implements beyond drawing on top. CAP_SUGGESTION_STYLE, CAP_POPUP_LAYOUT and
+     * CAP_HIDE_ANIMATION join as FXboard implements them, so this page only shows working settings.
+     */
+    val CAPS = KeyFx.CAP_KEY_TRANSFORM or KeyFx.CAP_EXACT_WORD
 
     fun open(context: Context): SharedPreferences =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -95,7 +95,6 @@ fun KeyFxSettingsScreen() {
 
         // Modified-version notice, required by the FUTO Source First License
         Tip(stringResource(R.string.fork_modified_notice))
-        Tip(stringResource(R.string.keyfx_not_connected))
 
         Box(Modifier.padding(16.dp, 8.dp)) {
             SettingsTextEdit(testText, multiline = true, placeholder = stringResource(R.string.keyfx_test_field_hint))
@@ -110,38 +109,6 @@ fun KeyFxSettingsScreen() {
             }
             SectionSettings(section, settings, version, edit)
         }
-
-        ScreenTitle(stringResource(R.string.keyfx_legacy_section))
-        Text(
-            stringResource(R.string.keyfx_legacy_note),
-            style = Typography.SmallMl,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(16.dp, 0.dp)
-        )
-        SettingToggleSharedPrefs(
-            title = stringResource(R.string.fork_effect_ripple_title),
-            subtitle = stringResource(R.string.fork_effect_ripple_subtitle),
-            key = Settings.PREF_EFFECT_RIPPLE,
-            default = false,
-        )
-        SettingToggleSharedPrefs(
-            title = stringResource(R.string.fork_effect_glow_title),
-            subtitle = stringResource(R.string.fork_effect_glow_subtitle),
-            key = Settings.PREF_EFFECT_GLOW,
-            default = false,
-        )
-        SettingToggleSharedPrefs(
-            title = stringResource(R.string.fork_effect_particles_title),
-            subtitle = stringResource(R.string.fork_effect_particles_subtitle),
-            key = Settings.PREF_EFFECT_PARTICLES,
-            default = false,
-        )
-        SettingToggleSharedPrefs(
-            title = stringResource(R.string.fork_effect_trail_title),
-            subtitle = stringResource(R.string.fork_effect_trail_subtitle),
-            key = Settings.PREF_EFFECT_SPACE_TRAIL,
-            default = false,
-        )
 
         Tip(stringResource(R.string.keyfx_animations_note))
         BottomSpacer()

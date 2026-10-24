@@ -1016,6 +1016,11 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                             mStartY = y;
                             sListener.onMovePointer(steps);
                         }
+                        // Fork: keyfx's spacebar trackpad follows the finger once the cursor moves
+                        if (mCursorMoved) {
+                            final KeyFxHost fxHost = KeyFxHost.getActive();
+                            if (fxHost != null) fxHost.cursorAt(x, y);
+                        }
                     }
                 }
 

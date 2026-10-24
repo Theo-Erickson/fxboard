@@ -33,6 +33,8 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.theo.keyfx.KeyLook;
+
 import org.futo.inputmethod.keyboard.internal.KeyDrawParams;
 import org.futo.inputmethod.keyboard.internal.KeyVisualAttributes;
 import org.futo.inputmethod.latin.uix.DynamicThemeProvider;
@@ -125,6 +127,11 @@ public class KeyboardView extends View {
     @Nonnull
     private final Paint mPaint = new Paint();
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
+
+    // Fork: keyfx's host (see KeyFxHost), set by MainKeyboardView only, so effects can scale,
+    // move and fade the real keys. Null in other keyboard views like the accent popup.
+    @Nullable protected KeyFxHost mKeyFxHost;
+    private final KeyLook mKeyLook = new KeyLook();
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.keyboardViewStyle);
@@ -397,6 +404,20 @@ public class KeyboardView extends View {
         final Rect drawOffsetAndSize = getKeyDrawOffsetAndSize(key, kdc);
         canvas.translate(drawOffsetAndSize.left, drawOffsetAndSize.top);
 
+        // Fork: keyfx can scale, move and fade this key (KeyFxHost). The rect holds the width
+        // and height in right and bottom.
+        int fxSave = -1;
+        boolean fxLabelFade = false;
+        final int w = drawOffsetAndSize.right, h = drawOffsetAndSize.bottom;
+        if (mKeyFxHost != null && mKeyFxHost.look(key, mKeyLook)) {
+            fxSave = mKeyLook.alpha < 1f
+                    ? canvas.saveLayerAlpha(-w, -h, 2 * w, 2 * h, Math.round(255 * mKeyLook.alpha))
+                    : canvas.save();
+            canvas.translate(mKeyLook.dx, mKeyLook.dy);
+            canvas.scale(mKeyLook.scale, mKeyLook.scale, w / 2f, h / 2f);
+            // Fork: fade the whole top visuals (icons and outlined labels too) with a layer.
+            fxLabelFade = mKeyLook.labelAlpha < 1f;
+        }
 
         final Drawable background = kdc.getBackground();
         if (background != null) {
@@ -404,9 +425,15 @@ public class KeyboardView extends View {
         }
 
         if(Color.alpha(kdc.getTextColor()) > 0) {
+            // Fork: own layer so labelAlpha fades icons and outlined labels as well.
+            final int labelSave = fxLabelFade
+                    ? canvas.saveLayerAlpha(-w, -h, 2 * w, 2 * h, Math.round(255 * mKeyLook.labelAlpha))
+                    : -1;
             onDrawKeyTopVisuals(key, canvas, paint, params, kdc, drawOffsetAndSize.right, drawOffsetAndSize.bottom);
+            if (labelSave >= 0) canvas.restoreToCount(labelSave);
         }
 
+        if (fxSave >= 0) canvas.restoreToCount(fxSave);
         canvas.translate(-drawOffsetAndSize.left, -drawOffsetAndSize.top);
     }
 

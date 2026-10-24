@@ -64,6 +64,7 @@ import org.futo.inputmethod.event.Event;
 import org.futo.inputmethod.event.HardwareEventDecoder;
 import org.futo.inputmethod.event.HardwareKeyboardEventDecoder;
 import org.futo.inputmethod.event.InputTransaction;
+import org.futo.inputmethod.keyboard.KeyFxHost;
 import org.futo.inputmethod.keyboard.Keyboard;
 import org.futo.inputmethod.keyboard.KeyboardActionListener;
 import org.futo.inputmethod.keyboard.KeyboardSwitcher;
@@ -673,6 +674,8 @@ public class LatinIMELegacy implements KeyboardActionListener,
         mImeManager.getActiveIME(
                 mSettings.getCurrent()
         ).onUpWithPointerActive();
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork: the spacebar trackpad ends
+        if (fxHost != null) fxHost.cursorEnd();
     }
 
     private float mSwipeLanguageProgress = 0.0f;
@@ -742,7 +745,11 @@ public class LatinIMELegacy implements KeyboardActionListener,
         final int keyY = mainKeyboardView.getKeyY(y);
         final Event event = createSoftwareKeypressEvent(getCodePointForKeyboard(codePoint),
                 keyX, keyY, isKeyRepeat);
+        // Fork: keyfx learns what was typed; backspace compares the text around the delete
+        final KeyFxHost fxHost = KeyFxHost.getActive();
+        if (fxHost != null) fxHost.beforeCodeInput(codePoint, getLatinIME().getCurrentInputConnection());
         onEvent(event);
+        if (fxHost != null) fxHost.afterCodeInput(codePoint, isKeyRepeat, getLatinIME().getCurrentInputConnection());
     }
 
     // This method is public for testability of LatinIME, but also in the future it should
@@ -799,6 +806,8 @@ public class LatinIMELegacy implements KeyboardActionListener,
     @Override
     public void onStartBatchInput() {
         getActiveIME().onStartBatchInput();
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork: keyfx swipe effects
+        if (fxHost != null) fxHost.swipeStart();
     }
 
     @Override
@@ -808,12 +817,16 @@ public class LatinIMELegacy implements KeyboardActionListener,
 
     @Override
     public void onEndBatchInput(final InputPointers batchPointers) {
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork
+        if (fxHost != null) fxHost.swipeEnd();
         getActiveIME().onEndBatchInput(batchPointers);
     }
 
     @Override
     public void onCancelBatchInput() {
         getActiveIME().onCancelBatchInput();
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork
+        if (fxHost != null) fxHost.swipeCancel();
     }
 
     // Called from PointerTracker through the KeyboardActionListener interface
@@ -906,6 +919,8 @@ public class LatinIMELegacy implements KeyboardActionListener,
     @Override
     public void onReleaseKey(final int primaryCode, final boolean withSliding) {
         mKeyboardSwitcher.onReleaseKey(primaryCode, withSliding, getCurrentAutoCapsState());
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork: ends keyfx's backspace hold
+        if (fxHost != null) fxHost.releaseKey(primaryCode);
     }
 
     private HardwareEventDecoder getHardwareKeyEventDecoder(final int deviceId) {

@@ -21,6 +21,7 @@ import android.os.SystemClock;
 import android.view.ViewConfiguration;
 
 import org.futo.inputmethod.keyboard.Key;
+import org.futo.inputmethod.keyboard.KeyFxHost;
 import org.futo.inputmethod.keyboard.PointerTracker;
 import org.futo.inputmethod.latin.common.Constants;
 import org.futo.inputmethod.latin.utils.LeakGuardHandlerWrapper;
@@ -112,6 +113,8 @@ public final class TimerHandler extends LeakGuardHandlerWrapper<DrawingProxy>
         if (key == null) {
             return;
         }
+        final KeyFxHost fxHost = KeyFxHost.getActive(); // Fork: keyfx's hold charge
+        if (fxHost != null) fxHost.longPressStart(key, delay);
         // Use a separate message id for long pressing shift key, because long press shift key
         // timers should be canceled when other key is pressed.
         final int messageId = (key.getCode() == Constants.CODE_SHIFT)
@@ -121,8 +124,13 @@ public final class TimerHandler extends LeakGuardHandlerWrapper<DrawingProxy>
 
     @Override
     public void cancelLongPressTimersOf(@Nonnull final PointerTracker tracker) {
+        final boolean pending = hasMessages(MSG_LONGPRESS_KEY, tracker)
+                || hasMessages(MSG_LONGPRESS_SHIFT_KEY, tracker);
         removeMessages(MSG_LONGPRESS_KEY, tracker);
         removeMessages(MSG_LONGPRESS_SHIFT_KEY, tracker);
+        // Fork: the charge only ends if a timer was still waiting (a fired timer already finished it)
+        final KeyFxHost fxHost = KeyFxHost.getActive();
+        if (pending && fxHost != null) fxHost.longPressEnd();
     }
 
     @Override
@@ -131,8 +139,13 @@ public final class TimerHandler extends LeakGuardHandlerWrapper<DrawingProxy>
     }
 
     public void cancelLongPressTimers() {
+        final boolean pending = hasMessages(MSG_LONGPRESS_KEY)
+                || hasMessages(MSG_LONGPRESS_SHIFT_KEY);
         removeMessages(MSG_LONGPRESS_KEY);
         removeMessages(MSG_LONGPRESS_SHIFT_KEY);
+        // Fork: the charge only ends if a timer was still waiting (a fired timer already finished it)
+        final KeyFxHost fxHost = KeyFxHost.getActive();
+        if (pending && fxHost != null) fxHost.longPressEnd();
     }
 
     @Override

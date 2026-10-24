@@ -27,10 +27,10 @@
 
 ## Summary
 
-FUTO Keyboard is a good modern keyboard that stays offline and doesn't spy on you. FXboard is a fork of it that adds keypress effects and a few typing extras. Next up is [keyfx](https://github.com/Theo-Erickson/keyfx), a larger set of effects: key pops, floating letters, backspace fire and black holes, swipe trails, letter hop and more.
+FUTO Keyboard is a good modern keyboard that stays offline and doesn't spy on you. FXboard is a fork of it that adds [keyfx](https://github.com/Theo-Erickson/keyfx) effects and a few typing extras: key pops, floating letters, backspace fire and black holes, swipe trails, letter hop and more.
 
 - **Everything FUTO Keyboard does**, unchanged: FXboard tracks FUTO's upstream code and adds to it.
-- **Extras off by default.** Everything FXboard adds lives in Settings under **FXboard extras** and **Keyboard effects**, and every effect starts off.
+- **All in two settings pages.** Everything FXboard adds lives in Settings under **FXboard extras** and **Keyboard effects**, where each effect can be switched off or tuned.
 - **Installs alongside the official app** as its own app (`com.theo.fxboard`), so you can try it without removing FUTO Keyboard.
 - **Free.** No ads, no paid features, no donation button in the app.
 
@@ -56,7 +56,7 @@ A keyboard sees everything you type, so please don't install FXboard APKs from a
 
 1. Download the APK from the [latest release](https://github.com/Theo-Erickson/fxboard/releases/latest) and open it. Allow your browser or file manager to install apps if Android asks.
 2. Open **FXboard** from the app drawer and follow its setup to enable it as a keyboard.
-3. Go to Settings > **FXboard extras** and Settings > **Keyboard effects**, and switch on what you like.
+3. Go to Settings > **FXboard extras** and Settings > **Keyboard effects**, and adjust what you like: most effects start on, and each can be switched off or tuned.
 
 **Requirements:** Android 7.0 or newer. Hiding the navigation bar needs Android 15 or newer.
 
@@ -68,12 +68,12 @@ A keyboard sees everything you type, so please don't install FXboard APKs from a
 |---|---|
 | Vertical spacebar cursor | Drag the spacebar up or down to move the cursor between lines, alongside the normal left and right drag |
 | No navigation bar | Hide the keyboard navigation bar (down arrow and keyboard switcher), Android 15 and newer |
-| Keypress effects | Ripple, key glow, particles and a spacebar drag trail, under **Legacy effects** at the bottom of Settings > Keyboard effects |
-| Keyboard effects page | Every keyfx effect setting, an **Import** box for the keyfx lab's export, a reset button and a test field. The settings are saved, but keyfx isn't connected to the keyboard yet, so they don't change anything until a later update |
+| Keyboard effects | Every [keyfx](https://github.com/Theo-Erickson/keyfx) effect, live on the keyboard: key pops that scale the real key, floating letters, swipe trails, letter hop with FUTO's exact swiped word, backspace effects that shake the key, ripple, sparks and more |
+| Keyboard effects page | Every effect setting, an **Import** box for the keyfx lab's export, a reset button and a test field |
 
-The spacebar cursor and navigation bar options are in Settings under **FXboard extras**. Every effect starts off.
+The spacebar cursor and navigation bar options are in Settings under **FXboard extras**; effects are under **Keyboard effects**.
 
-**Coming next:** connecting [keyfx](https://github.com/Theo-Erickson/keyfx) to the keyboard, so the Keyboard effects page takes effect and replaces the legacy effects. You can try them today in the [keyfx lab](https://theo-erickson.github.io/keyfx/), or on a rooted phone with [FUTO Tweaks](https://github.com/Theo-Erickson/futo-tweaks).
+**Coming next:** lighting up the predicted word in the suggestion bar, the bloom accent popup and the hide animation. You can try them today in the [keyfx lab](https://theo-erickson.github.io/keyfx/).
 
 ## Related projects
 

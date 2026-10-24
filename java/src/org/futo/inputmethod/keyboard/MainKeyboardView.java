@@ -64,11 +64,6 @@ import org.futo.inputmethod.latin.utils.SubtypeLocaleUtils;
 import org.futo.inputmethod.latin.utils.TypefaceUtils;
 import org.futo.inputmethod.v2keyboard.LayoutManager;
 
-import android.util.SparseArray;
-
-import org.futo.inputmethod.latin.settings.Settings;
-import org.futo.inputmethod.latin.settings.SettingsValues;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.WeakHashMap;
@@ -131,12 +126,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     /* Space key and its icon and background. */
     private Key mSpaceKey;
 
-    // Fork: keypress effects, drawn in this view's overlay (see KeyEffectsDrawable)
-    private final KeyEffectsDrawable mKeyEffects;
-    // Fork: pointers that went down on the spacebar, mapped to {downX, downY, trailStarted}
-    private final SparseArray<float[]> mSpaceDragOrigins = new SparseArray<>();
-    // Fork: how far a spacebar drag must travel before the trail appears, so taps stay clean
-    private final float mSpaceTrailThreshold;
+    // Fork: keyfx, the effects library (see KeyFxHost)
+    private final KeyFxHost mKeyFx;
     // Stuff to draw language name on spacebar.
     private final int mLanguageOnSpacebarFinalAlpha;
     private ObjectAnimator mLanguageOnSpacebarFadeoutAnimator;
@@ -199,11 +190,9 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     public MainKeyboardView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
 
-        // Fork: the effects drawable sits in the overlay, so animating it never redraws keys
-        final float density = getResources().getDisplayMetrics().density;
-        mKeyEffects = new KeyEffectsDrawable(density);
-        mSpaceTrailThreshold = 12f * density;
-        getOverlay().add(mKeyEffects);
+        // Fork: keyfx draws in the window's overlay once the view is attached (see KeyFxHost)
+        mKeyFx = new KeyFxHost(this);
+        mKeyFxHost = mKeyFx;
 
         final DrawingPreviewPlacerView drawingPreviewPlacerView =
                 new DrawingPreviewPlacerView(context, attrs);
@@ -420,12 +409,9 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
 
         mSpaceKey = keyboard.getKey(Constants.CODE_SPACE);
 
-        // Fork: match effects to the theme accent (the swipe trail color), and drop any
-        // effects left over from the previous layout
+        // Fork: effects follow the theme accent (the swipe trail color) and the new keys
         final Integer accent = mDrawableProvider.getColor(R.styleable.MainKeyboardView_gestureTrailColor);
-        mKeyEffects.setColor(accent != null ? accent : Color.WHITE);
-        mKeyEffects.clear();
-        mSpaceDragOrigins.clear();
+        mKeyFx.setKeyboard(keyboard, accent != null ? accent : Color.WHITE);
 
         final int keyHeight = keyboard.mMostCommonKeyHeight - keyboard.mVerticalGap;
         mLanguageOnSpacebarTextSize = Math.min(keyHeight, keyboard.mMostCommonKeyWidth) * mLanguageOnSpacebarTextRatio;
@@ -501,13 +487,6 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         key.onPressed();
         invalidateKey(key);
 
-        // Fork: flash the pressed key
-        final SettingsValues settings = Settings.getInstance().getCurrent();
-        if (settings != null && settings.mEffectGlow) {
-            final float left = key.getX() + getPaddingLeft();
-            final float top = key.getY() + getPaddingTop();
-            mKeyEffects.addGlow(left, top, left + key.getWidth(), top + key.getHeight());
-        }
         if (withPreview && !key.getNoKeyPreview()) {
             showKeyPreview(key);
         }
@@ -625,12 +604,14 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         installPreviewPlacerView();
+        mKeyFx.attach(); // Fork
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mDrawingPreviewPlacerView.removeAllViews();
+        mKeyFx.detach(); // Fork
     }
 
     // Implements {@link DrawingProxy@showMoreKeysKeyboard(Key,PointerTracker)}.
@@ -735,7 +716,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         if (getKeyboard() == null) {
             return false;
         }
-        handleKeyEffects(event);
+        mKeyFx.onTouch(event); // Fork: keyfx sees every touch, never changes it
         if (mNonDistinctMultitouchHelper != null) {
             if (event.getPointerCount() > 1 && mTimerHandler.isInKeyRepeat()) {
                 // Key repeating timer will be canceled if 2 or more keys are in action.
@@ -746,68 +727,6 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
             return true;
         }
         return processMotionEvent(event);
-    }
-
-    // Fork: overlay drawables only draw inside their bounds, so keep them matched to the view
-    @Override
-    protected void onSizeChanged(final int w, final int h, final int oldw, final int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mKeyEffects.setBounds(0, 0, w, h);
-    }
-
-    /**
-     * Fork: feeds touch positions to the keypress effects. Purely visual, it never consumes
-     * or changes the event, so typing behaves exactly the same with effects on or off.
-     */
-    private void handleKeyEffects(final MotionEvent event) {
-        final SettingsValues settings = Settings.getInstance().getCurrent();
-        if (settings == null) return;
-
-        final int action = event.getActionMasked();
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN: {
-                final int index = event.getActionIndex();
-                final float x = event.getX(index);
-                final float y = event.getY(index);
-                if (settings.mEffectRipple) mKeyEffects.addRipple(x, y);
-                if (settings.mEffectParticles) mKeyEffects.addParticleBurst(x, y);
-
-                // Remember spacebar touches, the trail only starts once the finger drags
-                if (settings.mEffectSpaceTrail) {
-                    final Key key = mKeyDetector.detectHitKey((int) x, (int) y);
-                    if (key != null && key.getCode() == Constants.CODE_SPACE) {
-                        mSpaceDragOrigins.put(event.getPointerId(index), new float[] { x, y, 0f });
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                for (int i = 0; i < event.getPointerCount(); i++) {
-                    final int id = event.getPointerId(i);
-                    final float[] origin = mSpaceDragOrigins.get(id);
-                    if (origin == null) continue;
-
-                    final float x = event.getX(i);
-                    final float y = event.getY(i);
-                    if (origin[2] == 0f) {
-                        if (Math.hypot(x - origin[0], y - origin[1]) < mSpaceTrailThreshold) continue;
-                        // Drag confirmed: start the trail at the original touch point
-                        origin[2] = 1f;
-                        mKeyEffects.addTrailPoint(id, origin[0], origin[1]);
-                    }
-                    mKeyEffects.addTrailPoint(id, x, y);
-                }
-                break;
-            }
-            case MotionEvent.ACTION_POINTER_UP:
-                mSpaceDragOrigins.remove(event.getPointerId(event.getActionIndex()));
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                mSpaceDragOrigins.clear();
-                break;
-        }
     }
 
     public boolean processMotionEvent(final MotionEvent event) {
