@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FXboard: Android 7 has no adaptive icons; this replaces FUTO's PNGs there -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_launcher_background_fx"/>
+    <item android:drawable="@drawable/ic_launcher_foreground_fx"/>
+</layer-list>
