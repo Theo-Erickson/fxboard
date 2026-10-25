@@ -12,6 +12,10 @@
 
     <string name="fork_modified_notice" translatable="false">FXboard is an unofficial, modified version of FUTO Keyboard. It is not made, endorsed or supported by FUTO. Please report issues with FXboard to github.com/Theo-Erickson/fxboard, not to FUTO.</string>
 
+    <!-- Where update links go. Upstream's addresses here; the fxboard flavor overrides them. -->
+    <string name="manual_update_check_url" translatable="false">https://keyboard.futo.tech/manual_update</string>
+    <string name="manual_update_downloads_url" translatable="false">https://keyboard.futo.tech/#downloads</string>
+
     <string name="keyfx_settings_title" translatable="false">Keyboard effects</string>
     <string name="keyfx_settings_subtitle" translatable="false">Key pops, floating letters, swipe trails and more</string>
     <string name="keyfx_test_field_hint" translatable="false">Type or swipe here to try your settings</string>

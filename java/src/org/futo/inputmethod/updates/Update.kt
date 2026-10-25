@@ -96,7 +96,8 @@ fun Context.openURI(uri: String, newTask: Boolean = false) {
 }
 
 fun Context.openManualUpdateCheck() {
-    openURI("https://keyboard.futo.tech/manual_update?version=${BuildConfig.VERSION_CODE}&build=${BuildConfig.FLAVOR}".let {
+    // Fork: the base URL is a string resource so FXboard can point at its own releases
+    openURI("${getString(R.string.manual_update_check_url)}?version=${BuildConfig.VERSION_CODE}&build=${BuildConfig.FLAVOR}".let {
         if(BuildConfig.BRANCH != "master") {
             it + "&branch=${BuildConfig.BRANCH}&name=${BuildConfig.VERSION_NAME}"
         } else {
@@ -152,6 +153,7 @@ val dismissedMigrateUpdateNotice = SettingsKey(
 @Preview
 fun ConditionalMigrateUpdateNotice() {
     val context = LocalContext.current
+    val downloadsUrl = stringResource(R.string.manual_update_downloads_url)
     val value = useDataStore(dismissedMigrateUpdateNotice, blocking = true)
     if(!value.value) {
         PaymentSurface(isPrimary = true) {
@@ -170,7 +172,7 @@ fun ConditionalMigrateUpdateNotice() {
             ) {
                 Box(modifier = Modifier.weight(1.0f)) {
                     Button(onClick = {
-                        context.openURI("https://keyboard.futo.tech/#downloads")
+                        context.openURI(downloadsUrl)
                     }, modifier = Modifier.align(Alignment.Center)) {
                         Text(stringResource(R.string.manual_update_notice_visit_site_button))
                     }

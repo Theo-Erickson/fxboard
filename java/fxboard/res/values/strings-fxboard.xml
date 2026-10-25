@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FXboard: setup and update text that would otherwise name FUTO Keyboard or send people to FUTO's site.
+     Only English is overridden; other languages keep upstream's translations. -->
+<resources>
+    <string name="setup_welcome_text">Welcome to FXboard! It\'s FUTO Keyboard with keyboard effects added, made by an independent developer and still a work in progress. It isn\'t made or supported by FUTO.\n\nTo get started, enable FXboard as an input method.</string>
+    <string name="setup_active_input_method">Please select FXboard as your active input method.</string>
+
+    <string name="manual_update_notice_paragraph_2">New versions come out on FXboard\'s GitHub releases page. Obtainium can install them for you automatically.</string>
+    <string name="manual_update_check_url" translatable="false">https://github.com/Theo-Erickson/fxboard/releases/latest</string>
+    <string name="manual_update_downloads_url" translatable="false">https://github.com/Theo-Erickson/fxboard/releases/latest</string>
+</resources>
