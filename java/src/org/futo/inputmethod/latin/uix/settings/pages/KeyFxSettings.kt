@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -107,7 +108,10 @@ fun KeyFxSettingsScreen() {
                 group = section.group
                 ScreenTitle(section.group)
             }
-            SectionSettings(section, settings, version, edit)
+            // Keyed on version: settings isn't Compose state, so a write must rebuild the section
+            key(version) {
+                SectionSettings(section, settings, edit)
+            }
         }
 
         Tip(stringResource(R.string.keyfx_animations_note))
@@ -168,7 +172,6 @@ fun KeyFxSettingsScreen() {
 private fun SectionSettings(
     section: Section,
     settings: FxSettings,
-    @Suppress("UNUSED_PARAMETER") version: Int, // forces recomposition after a write
     edit: (SharedPreferences.Editor.() -> Unit) -> Unit
 ) {
     if (section.toggleable) {
