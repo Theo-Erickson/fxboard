@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +41,7 @@ import org.futo.inputmethod.latin.R
 import org.futo.inputmethod.latin.uix.SettingsTextEdit
 import org.futo.inputmethod.latin.uix.settings.BottomSpacer
 import org.futo.inputmethod.latin.uix.settings.DropDownPicker
+import org.futo.inputmethod.latin.uix.settings.RotatingChevronIcon
 import org.futo.inputmethod.latin.uix.settings.ScreenTitle
 import org.futo.inputmethod.latin.uix.settings.ScrollableList
 import org.futo.inputmethod.latin.uix.settings.SettingItem
@@ -83,6 +85,8 @@ fun KeyFxSettingsScreen() {
     var showImport by remember { mutableStateOf(false) }
     var showReset by remember { mutableStateOf(false) }
     val testText = remember { mutableStateOf("") }
+    // Which sections show their settings; outside the version key so it survives each write
+    val expanded = remember { mutableStateMapOf<String, Boolean>() }
 
     ScrollableList {
         Row(verticalAlignment = CenterVertically) {
@@ -106,14 +110,22 @@ fun KeyFxSettingsScreen() {
             if (!section.supportedBy(KeyFxPrefs.CAPS)) continue
             if (section.group != group) {
                 group = section.group
+                Spacer(Modifier.height(GroupGap))
                 ScreenTitle(section.group)
+            } else {
+                Spacer(Modifier.height(SectionGap))
             }
             // Keyed on version: settings isn't Compose state, so a write must rebuild the section
             key(version) {
-                SectionSettings(section, settings, edit)
+                SectionSettings(
+                    section, settings, edit,
+                    expanded = expanded[section.id] == true,
+                    toggleExpanded = { expanded[section.id] = expanded[section.id] != true },
+                )
             }
         }
 
+        Spacer(Modifier.height(GroupGap))
         Tip(stringResource(R.string.keyfx_animations_note))
         BottomSpacer()
     }
@@ -167,28 +179,49 @@ fun KeyFxSettingsScreen() {
     }
 }
 
-/** One schema section: its switch (or plain header), then its fields while it is on. */
+// Space above each group title, and between the features in a group
+private val GroupGap = 20.dp
+private val SectionGap = 8.dp
+// Lines settings up under their feature's title, past SettingItem's icon column
+private val FieldIndent = 80.dp
+
+/**
+ * One schema section: its switch (or plain header). While it is on, tapping the row (or the
+ * chevron) expands its settings below it; the switch itself only turns the feature on and off.
+ */
 @Composable
 private fun SectionSettings(
     section: Section,
     settings: FxSettings,
-    edit: (SharedPreferences.Editor.() -> Unit) -> Unit
+    edit: (SharedPreferences.Editor.() -> Unit) -> Unit,
+    expanded: Boolean,
+    toggleExpanded: () -> Unit,
 ) {
+    val fields = section.fields.filter { it.supportedBy(KeyFxPrefs.CAPS) && it.visible(settings, section.id) }
+    val on = !section.toggleable || settings.on(section.id)
+    val canExpand = on && fields.isNotEmpty()
+    val chevron: (@Composable () -> Unit)? = if (canExpand) { { RotatingChevronIcon(expanded) } } else null
+
     if (section.toggleable) {
-        val on = settings.on(section.id)
         SettingToggleRaw(
             title = section.title,
             enabled = on,
             setValue = { edit { putBoolean(FxSettings.key(section.id, "on"), it) } },
             subtitle = section.description,
+            icon = chevron,
+            onSubmenuNavigate = if (canExpand) toggleExpanded else null,
         )
-        if (!on) return
     } else {
-        SettingItem(title = section.title, subtitle = section.description) {}
+        SettingItem(
+            title = section.title,
+            subtitle = section.description,
+            onClick = if (canExpand) toggleExpanded else null,
+            icon = chevron,
+        ) {}
     }
+    if (!canExpand || !expanded) return
 
-    for (field in section.fields) {
-        if (!field.supportedBy(KeyFxPrefs.CAPS) || !field.visible(settings, section.id)) continue
+    for (field in fields) {
         val key = FxSettings.key(section.id, field.key)
         when (field.type) {
             Field.TOGGLE -> SettingToggleRaw(
@@ -209,7 +242,7 @@ private fun RangeField(field: Field, saved: Float, save: (Float) -> Unit) {
     var dragging by remember { mutableStateOf<Float?>(null) }
     val value = (dragging ?: saved).coerceIn(field.min, field.max)
 
-    Column(Modifier.padding(16.dp, 4.dp)) {
+    Column(Modifier.padding(start = FieldIndent, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
         Row {
             Text(field.label, style = Typography.Body.Regular, modifier = Modifier.weight(1.0f))
             Text(format(field, value), style = Typography.SmallMl, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -232,7 +265,7 @@ private fun RangeField(field: Field, saved: Float, save: (Float) -> Unit) {
 @Composable
 private fun ChoiceField(field: Field, current: String, save: (String) -> Unit) {
     val options = field.values.indices.toList()
-    Column(Modifier.padding(16.dp, 4.dp)) {
+    Column(Modifier.padding(start = FieldIndent, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
         Text(field.label, style = Typography.Body.Regular)
         Spacer(Modifier.height(4.dp))
         DropDownPicker(
