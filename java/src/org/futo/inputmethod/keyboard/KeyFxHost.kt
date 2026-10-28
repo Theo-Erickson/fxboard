@@ -29,6 +29,14 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
         var active: KeyFxHost? = null
             private set
 
+        /** Whether the field being typed in is a password field, where keyfx stays off. */
+        @JvmStatic
+        var privateField = false
+            set(value) {
+                field = value
+                active?.fx?.setPrivateField(value)
+            }
+
         // Touch points kept while waiting to learn whether a touch is a swipe
         private const val SWIPE_BUFFER_MAX = 400
         // How long the show animation may keep the keyboard hidden before it comes back anyway
@@ -85,6 +93,7 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
         }
         active = this
         fx.setEnabled(animationsOn())
+        fx.setPrivateField(privateField)
         updateLayout()
     }
 
