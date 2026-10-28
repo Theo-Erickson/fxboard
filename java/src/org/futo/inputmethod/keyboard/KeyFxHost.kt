@@ -11,6 +11,7 @@ import android.graphics.RectF
 import android.os.Build
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.InputConnection
 import com.theo.keyfx.FxHost
 import com.theo.keyfx.FxKey
@@ -63,6 +64,7 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
     private var downX = 0f
     private var downY = 0f
     private var deleteBefore: String? = null
+    private var deleteAnchor: CursorAnchorInfo? = null
     private var deleteHolding = false
     private var cursorOn = false
 
@@ -275,7 +277,11 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
 
     /** Just before FUTO handles a key: backspace remembers the text it is about to change. */
     fun beforeCodeInput(code: Int, ic: InputConnection?) {
-        if (code == Constants.CODE_DELETE) deleteBefore = if (deleteFxOn()) FxText.textBefore(ic) else null
+        if (code == Constants.CODE_DELETE) {
+            deleteBefore = if (deleteFxOn()) FxText.textBefore(ic) else null
+            // The app reports the cursor after it changes, so this still describes the text before the delete
+            deleteAnchor = FxText.anchor
+        }
     }
 
     /** Just after FUTO handled a key. Backspace's first press is a tap; its repeats are the hold. */
@@ -287,7 +293,8 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
             if (!deleteFxOn()) return
             val chars = FxText.deletedLength(before, FxText.textBefore(ic))
             val kb = fx.layout().keyboard
-            val letters = FxText.deletedLetters(before, chars, kb.centerX(), kb.top, density)
+            val letters = FxText.lettersAt(deleteAnchor, before, chars, root, density, kb.centerX(), kb.top)
+            deleteAnchor = null
             if (!isKeyRepeat) {
                 fx.deleteTap(k, *letters)
             } else {

@@ -14,6 +14,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.CompletionInfo
+import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InlineSuggestionsRequest
 import android.view.inputmethod.InlineSuggestionsResponse
@@ -59,6 +60,7 @@ import org.futo.inputmethod.accessibility.AccessibilityUtils
 import org.futo.inputmethod.engine.ExpandableSuggestionBarConfiguration
 import org.futo.inputmethod.engine.IMEManager
 import org.futo.inputmethod.engine.general.WordLearner
+import org.futo.inputmethod.keyboard.FxText
 import org.futo.inputmethod.keyboard.KeyFxHost
 import org.futo.inputmethod.latin.SuggestedWords.SuggestedWordInfo
 import org.futo.inputmethod.latin.common.Constants
@@ -634,6 +636,13 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         lifecycleScope.launch { uixManager.showUpdateNoticeIfNeeded() }
         updateColorsIfDynamicChanged()
         uixManager.updateEmojiTranslationsIfNeeded()
+        FxText.watchCursor(currentInputConnection) // Fork: keyfx backspace effects start at the text
+    }
+
+    // Fork: keyfx needs to know where deleted letters were on screen
+    override fun onUpdateCursorAnchorInfo(cursorAnchorInfo: CursorAnchorInfo?) {
+        super.onUpdateCursorAnchorInfo(cursorAnchorInfo)
+        FxText.anchor = cursorAnchorInfo
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -645,6 +654,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
 
     override fun onFinishInput() {
         super.onFinishInput()
+        FxText.anchor = null // Fork
         latinIMELegacy.onFinishInput()
         uixManager.onInputFinishing()
     }
@@ -918,6 +928,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
 
         val currentIC = currentInputConnection
         currentIC?.requestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE)
+        FxText.watchCursor(currentIC) // Fork: the request above turns off keyfx's cursor monitoring
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             super.getCurrentInputConnection()?.setImeConsumesInput(to != null)
