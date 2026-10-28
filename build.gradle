@@ -499,5 +499,16 @@ dependencies {
     androidTestImplementation 'androidx.annotation:annotation:1.0.0'
 }
 
+// FXboard: name APKs after the version (git describe locally, CI's VERSION_NAME there), so builds
+// are easy to tell apart, for example fxboard-r6-3-g1a2b3c4-debug.apk
+android.applicationVariants.all { variant ->
+    if (variant.flavorName != 'fxboard') return
+    variant.outputs.all {
+        def name = variant.versionName.replace('-fxboard', '')
+        if (!name.startsWith('fxboard')) name = "fxboard-${name}"
+        outputFileName = "${name}-${variant.buildType.name}.apk"
+    }
+}
+
 project.logger.lifecycle("versionCode = ${android.defaultConfig.versionCode}")
 project.logger.lifecycle("versionName = ${android.defaultConfig.versionName}")
