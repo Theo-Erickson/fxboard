@@ -411,6 +411,7 @@ public class KeyboardView extends View {
         int fxSave = -1;
         boolean fxLabelFade = false;
         final int w = drawOffsetAndSize.right, h = drawOffsetAndSize.bottom;
+        mFxLabel = null; // Fork: never a label left over from a key whose draw threw
         if (mKeyFxHost != null && mKeyFxHost.look(key, mKeyLook)) {
             fxSave = mKeyLook.alpha < 1f
                     ? canvas.saveLayerAlpha(-w, -h, 2 * w, 2 * h, Math.round(255 * mKeyLook.alpha))

@@ -1005,27 +1005,29 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                         final boolean verticalWins = verticalSteps != 0
                                 && Math.abs(y - mStartY) > Math.abs(x - mStartX);
 
+                        // Fork: the cursor step keyfx's trackpad effects step with, sent below
+                        int fxStepX = 0, fxStepY = 0;
                         if (verticalWins) {
                             mCursorMoved = true;
                             mStartY += verticalSteps * sPointerVerticalStep;
                             mStartX = x;
                             sListener.onMoveVerticalPointer(verticalSteps);
-                            // Fork: keyfx's trackpad effects step with the cursor
-                            final KeyFxHost stepHost = KeyFxHost.getActive();
-                            if (stepHost != null) stepHost.cursorStep(0, verticalSteps);
+                            fxStepY = verticalSteps; // Fork
                         } else if(steps != 0) {
                             mCursorMoved = true;
                             mStartX += steps * pointerStep;
                             mStartY = y;
                             sListener.onMovePointer(steps);
-                            // Fork: keyfx's trackpad effects step with the cursor
-                            final KeyFxHost stepHost = KeyFxHost.getActive();
-                            if (stepHost != null) stepHost.cursorStep(steps, 0);
+                            fxStepX = steps; // Fork
                         }
                         // Fork: keyfx's spacebar trackpad follows the finger once the cursor moves
                         if (mCursorMoved) {
                             final KeyFxHost fxHost = KeyFxHost.getActive();
-                            if (fxHost != null) fxHost.cursorAt(x, y);
+                            if (fxHost != null) {
+                                fxHost.cursorAt(x, y);
+                                // After cursorAt, so the first step lands once trackpad mode is open
+                                if (fxStepX != 0 || fxStepY != 0) fxHost.cursorStep(fxStepX, fxStepY);
+                            }
                         }
                     }
                 }

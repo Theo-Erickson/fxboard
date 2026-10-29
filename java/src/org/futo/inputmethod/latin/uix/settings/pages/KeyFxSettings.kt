@@ -75,7 +75,7 @@ fun KeyFxSettingsScreen() {
     val context = LocalContext.current
     val prefs = remember { KeyFxPrefs.open(context) }
     val schema = remember { KeyFx.schema() }
-    val settings = remember { FxSettings(prefs, schema) }
+    val settings = remember { FxSettings(prefs, schema, KeyFxPrefs.CAPS) }
     // Bumped after every write, so values read from settings recompose
     var version by remember { mutableIntStateOf(0) }
     val edit: (SharedPreferences.Editor.() -> Unit) -> Unit = { block ->
@@ -94,9 +94,9 @@ fun KeyFxSettingsScreen() {
     var previewing by remember { mutableStateOf<Section?>(null) }
     val previewText = remember { mutableStateOf("") }
     // A backup left by an app killed mid-preview is restored on entering; leaving restores too
-    LaunchedEffect(Unit) { restorePreview(prefs, edit) }
+    LaunchedEffect(Unit) { restorePreview(prefs, schema, edit) }
     DisposableEffect(Unit) {
-        onDispose { restorePreview(prefs, edit) }
+        onDispose { restorePreview(prefs, schema, edit) }
     }
 
     ScrollableList {
@@ -133,7 +133,7 @@ fun KeyFxSettingsScreen() {
                     expanded = expanded[section.id] == true,
                     toggleExpanded = { expanded[section.id] = expanded[section.id] != true },
                     preview = {
-                        startPreview(prefs, schema, settings, section, edit)
+                        startPreview(prefs, schema, section, edit)
                         previewing = section
                     },
                 )
@@ -180,7 +180,7 @@ fun KeyFxSettingsScreen() {
         val done = {
             previewing = null
             previewText.value = ""
-            restorePreview(prefs, edit)
+            restorePreview(prefs, schema, edit)
         }
         AlertDialog(
             onDismissRequest = done,
@@ -327,21 +327,26 @@ private fun ChoiceField(field: Field, current: String, save: (String) -> Unit) {
     }
 }
 
-// Prefs key holding every toggleable section's on value while a preview runs, as JSON
+// Prefs key holding the stored on values of toggleable sections while a preview runs, as JSON
 private const val PreviewBackup = "preview.backup"
 
-/** Backs up every toggleable section's on value, then turns on only the previewed one. */
+/** Backs up the toggleable sections' stored on values, then turns on only the previewed one. */
 private fun startPreview(
     prefs: SharedPreferences,
     schema: List<Section>,
-    settings: FxSettings,
     previewed: Section,
     edit: (SharedPreferences.Editor.() -> Unit) -> Unit,
 ) {
     // A backup already there is the real one; don't overwrite it with preview values
     val keep = prefs.contains(PreviewBackup)
+    // Only values actually stored, so sections still on their defaults go back to defaults
     val backup = JSONObject()
-    for (section in schema) if (section.toggleable) backup.put(section.id, settings.on(section.id))
+    val stored = prefs.all
+    for (section in schema) {
+        if (!section.toggleable) continue
+        val v = stored[FxSettings.key(section.id, "on")]
+        if (v is Boolean) backup.put(section.id, v)
+    }
     edit {
         if (!keep) putString(PreviewBackup, backup.toString())
         for (section in schema) {
@@ -350,13 +355,25 @@ private fun startPreview(
     }
 }
 
-/** Puts back the on values saved by startPreview and deletes the backup; nothing to do without one. */
-private fun restorePreview(prefs: SharedPreferences, edit: (SharedPreferences.Editor.() -> Unit) -> Unit) {
+/**
+ * Puts back the on values saved by startPreview, removes the ones that weren't stored so they
+ * read as defaults again, and deletes the backup; nothing to do without one.
+ */
+private fun restorePreview(
+    prefs: SharedPreferences,
+    schema: List<Section>,
+    edit: (SharedPreferences.Editor.() -> Unit) -> Unit,
+) {
     val saved = prefs.getString(PreviewBackup, null) ?: return
+    // A corrupt backup can't be restored, so it is just dropped
     val backup = try { JSONObject(saved) } catch (e: Exception) { null }
     edit {
         if (backup != null) {
-            for (id in backup.keys()) putBoolean(FxSettings.key(id, "on"), backup.optBoolean(id))
+            for (section in schema) {
+                if (!section.toggleable) continue
+                val key = FxSettings.key(section.id, "on")
+                if (backup.has(section.id)) putBoolean(key, backup.optBoolean(section.id)) else remove(key)
+            }
         }
         remove(PreviewBackup)
     }
