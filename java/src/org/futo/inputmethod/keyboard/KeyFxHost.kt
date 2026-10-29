@@ -347,6 +347,9 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
         fx.cursorMove(rx, ry)
     }
 
+    /** The trackpad moved the cursor dx characters or dy lines. */
+    fun cursorStep(dx: Int, dy: Int) = fx.cursorStep(dx, dy)
+
     fun cursorEnd() {
         if (!cursorOn) return
         cursorOn = false

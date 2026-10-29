@@ -68,8 +68,8 @@ A keyboard sees everything you type, so please don't install FXboard APKs from a
 |---|---|
 | Vertical spacebar cursor | Drag the spacebar up or down to move the cursor between lines, alongside the normal left and right drag |
 | No navigation bar | Hide the keyboard navigation bar (down arrow and keyboard switcher), Android 15 and newer |
-| Keyboard effects | Every [keyfx](https://github.com/Theo-Erickson/keyfx) effect, live on the keyboard: key pops that scale the real key, floating letters, swipe trails, letter hop with FUTO's exact swiped word, backspace effects that shake the key, ripple, sparks and more |
-| Keyboard effects page | Every effect setting, an **Import** box for the keyfx lab's export, a reset button and a test field |
+| Keyboard effects | Every [keyfx](https://github.com/Theo-Erickson/keyfx) effect, live on the keyboard: key pops that scale the real key, floating letters, swipe trails, letter hop with FUTO's exact swiped word, backspace effects that shake the key, ripple, sparks, water drops, a combo counter, lightning, neon and circuit trails, laser and vacuum backspace, piano, decode and flap show animations, a trackpad whose rails step with the cursor, and more |
+| Keyboard effects page | Every effect setting, a **Preview** button on each effect that turns on only that one while you try it (everything comes back when you're done), an **Import** box for the keyfx lab's export, a reset button and a test field |
 
 The spacebar cursor and navigation bar options are in Settings under **FXboard extras**; effects are under **Keyboard effects**.
 

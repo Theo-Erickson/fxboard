@@ -132,6 +132,8 @@ public class KeyboardView extends View {
     // move and fade the real keys. Null in other keyboard views like the accent popup.
     @Nullable protected KeyFxHost mKeyFxHost;
     private final KeyLook mKeyLook = new KeyLook();
+    // Fork: keyfx's label for the key being drawn (show decode and flap), null for its own
+    @Nullable private String mFxLabel;
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.keyboardViewStyle);
@@ -417,6 +419,8 @@ public class KeyboardView extends View {
             canvas.scale(mKeyLook.scale, mKeyLook.scale, w / 2f, h / 2f);
             // Fork: fade the whole top visuals (icons and outlined labels too) with a layer.
             fxLabelFade = mKeyLook.labelAlpha < 1f;
+            // Fork: onDrawKeyTopVisuals draws this text instead of the key's label or icon
+            mFxLabel = mKeyLook.label;
         }
 
         final Drawable background = kdc.getBackground();
@@ -432,6 +436,7 @@ public class KeyboardView extends View {
             onDrawKeyTopVisuals(key, canvas, paint, params, kdc, drawOffsetAndSize.right, drawOffsetAndSize.bottom);
             if (labelSave >= 0) canvas.restoreToCount(labelSave);
         }
+        mFxLabel = null; // Fork
 
         if (fxSave >= 0) canvas.restoreToCount(fxSave);
         canvas.translate(-drawOffsetAndSize.left, -drawOffsetAndSize.top);
@@ -474,11 +479,12 @@ public class KeyboardView extends View {
         final float centerY = keyHeight * 0.5f;
 
         // Draw key label.
-        final Drawable icon = kdc.getIcon();
+        // Fork: keyfx's label override (mFxLabel) replaces the key's label, and its icon if any
+        final Drawable icon = mFxLabel != null ? null : kdc.getIcon();
         final Drawable hintIcon = kdc.getHintIcon();
         float labelX = centerX;
         float labelBaseline = centerY;
-        final String label = kdc.getLabel();
+        final String label = mFxLabel != null ? mFxLabel : kdc.getLabel();
         final Rect bgPadding = kdc.getBackgroundPadding();
         final KeyOutline outline = kdc.getOutline();
 

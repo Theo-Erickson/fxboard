@@ -20,6 +20,8 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -88,6 +90,15 @@ fun KeyFxSettingsScreen() {
     // Which sections show their settings; outside the version key so it survives each write
     val expanded = remember { mutableStateMapOf<String, Boolean>() }
 
+    // The section being previewed on its own, null when no preview is open
+    var previewing by remember { mutableStateOf<Section?>(null) }
+    val previewText = remember { mutableStateOf("") }
+    // A backup left by an app killed mid-preview is restored on entering; leaving restores too
+    LaunchedEffect(Unit) { restorePreview(prefs, edit) }
+    DisposableEffect(Unit) {
+        onDispose { restorePreview(prefs, edit) }
+    }
+
     ScrollableList {
         Row(verticalAlignment = CenterVertically) {
             Box(Modifier.weight(1.0f)) {
@@ -121,6 +132,10 @@ fun KeyFxSettingsScreen() {
                     section, settings, edit,
                     expanded = expanded[section.id] == true,
                     toggleExpanded = { expanded[section.id] = expanded[section.id] != true },
+                    preview = {
+                        startPreview(prefs, schema, settings, section, edit)
+                        previewing = section
+                    },
                 )
             }
         }
@@ -161,6 +176,30 @@ fun KeyFxSettingsScreen() {
         )
     }
 
+    previewing?.let { section ->
+        val done = {
+            previewing = null
+            previewText.value = ""
+            restorePreview(prefs, edit)
+        }
+        AlertDialog(
+            onDismissRequest = done,
+            title = { Text(stringResource(R.string.keyfx_preview_title, section.title)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.keyfx_preview_message))
+                    Spacer(Modifier.height(12.dp))
+                    // An EditText, so autofocus (not a FocusRequester) focuses it and brings up the keyboard
+                    SettingsTextEdit(previewText, multiline = true, autofocus = true,
+                        placeholder = stringResource(R.string.keyfx_test_field_hint))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = done) { Text(stringResource(R.string.keyfx_preview_done)) }
+            },
+        )
+    }
+
     if (showReset) {
         AlertDialog(
             onDismissRequest = { showReset = false },
@@ -196,6 +235,7 @@ private fun SectionSettings(
     edit: (SharedPreferences.Editor.() -> Unit) -> Unit,
     expanded: Boolean,
     toggleExpanded: () -> Unit,
+    preview: () -> Unit,
 ) {
     val fields = section.fields.filter { it.supportedBy(KeyFxPrefs.CAPS) && it.visible(settings, section.id) }
     val on = !section.toggleable || settings.on(section.id)
@@ -203,14 +243,22 @@ private fun SectionSettings(
     val chevron: (@Composable () -> Unit)? = if (canExpand) { { RotatingChevronIcon(expanded) } } else null
 
     if (section.toggleable) {
-        SettingToggleRaw(
-            title = section.title,
-            enabled = on,
-            setValue = { edit { putBoolean(FxSettings.key(section.id, "on"), it) } },
-            subtitle = section.description,
-            icon = chevron,
-            onSubmenuNavigate = if (canExpand) toggleExpanded else null,
-        )
+        // The switch row, with a Preview button that tries this effect on its own
+        Row(verticalAlignment = CenterVertically) {
+            Box(Modifier.weight(1.0f)) {
+                SettingToggleRaw(
+                    title = section.title,
+                    enabled = on,
+                    setValue = { edit { putBoolean(FxSettings.key(section.id, "on"), it) } },
+                    subtitle = section.description,
+                    icon = chevron,
+                    onSubmenuNavigate = if (canExpand) toggleExpanded else null,
+                )
+            }
+            TextButton(onClick = preview, modifier = Modifier.padding(end = 8.dp)) {
+                Text(stringResource(R.string.keyfx_preview))
+            }
+        }
     } else {
         SettingItem(
             title = section.title,
@@ -264,7 +312,8 @@ private fun RangeField(field: Field, saved: Float, save: (Float) -> Unit) {
 
 @Composable
 private fun ChoiceField(field: Field, current: String, save: (String) -> Unit) {
-    val options = field.values.indices.toList()
+    // Values that need something FXboard doesn't implement yet aren't offered
+    val options = field.values.indices.filter { field.valueMissing(it, KeyFxPrefs.CAPS) == 0 }
     Column(Modifier.padding(start = FieldIndent, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
         Text(field.label, style = Typography.Body.Regular)
         Spacer(Modifier.height(4.dp))
@@ -275,6 +324,41 @@ private fun ChoiceField(field: Field, current: String, save: (String) -> Unit) {
             onSet = { save(field.values[it]) },
             getDisplayName = { field.names[it] },
         )
+    }
+}
+
+// Prefs key holding every toggleable section's on value while a preview runs, as JSON
+private const val PreviewBackup = "preview.backup"
+
+/** Backs up every toggleable section's on value, then turns on only the previewed one. */
+private fun startPreview(
+    prefs: SharedPreferences,
+    schema: List<Section>,
+    settings: FxSettings,
+    previewed: Section,
+    edit: (SharedPreferences.Editor.() -> Unit) -> Unit,
+) {
+    // A backup already there is the real one; don't overwrite it with preview values
+    val keep = prefs.contains(PreviewBackup)
+    val backup = JSONObject()
+    for (section in schema) if (section.toggleable) backup.put(section.id, settings.on(section.id))
+    edit {
+        if (!keep) putString(PreviewBackup, backup.toString())
+        for (section in schema) {
+            if (section.toggleable) putBoolean(FxSettings.key(section.id, "on"), section === previewed)
+        }
+    }
+}
+
+/** Puts back the on values saved by startPreview and deletes the backup; nothing to do without one. */
+private fun restorePreview(prefs: SharedPreferences, edit: (SharedPreferences.Editor.() -> Unit) -> Unit) {
+    val saved = prefs.getString(PreviewBackup, null) ?: return
+    val backup = try { JSONObject(saved) } catch (e: Exception) { null }
+    edit {
+        if (backup != null) {
+            for (id in backup.keys()) putBoolean(FxSettings.key(id, "on"), backup.optBoolean(id))
+        }
+        remove(PreviewBackup)
     }
 }
 

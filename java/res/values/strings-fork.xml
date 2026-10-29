@@ -28,5 +28,9 @@
     <string name="keyfx_import_failed" translatable="false">Couldn\'t read that: %s</string>
     <string name="keyfx_reset_title" translatable="false">Reset all effects?</string>
     <string name="keyfx_reset_message" translatable="false">Every keyfx setting goes back to its default.</string>
+    <string name="keyfx_preview" translatable="false">Preview</string>
+    <string name="keyfx_preview_title" translatable="false">Previewing: %s</string>
+    <string name="keyfx_preview_message" translatable="false">Only this effect is on. Type or swipe below.</string>
+    <string name="keyfx_preview_done" translatable="false">Done</string>
     <string name="keyfx_animations_note" translatable="false">Effects turn off when Android\'s \"Remove animations\" setting is on.</string>
 </resources>
