@@ -32,10 +32,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.theo.keyfx.Field
+import com.theo.keyfx.Fx
 import com.theo.keyfx.FxSettings
 import com.theo.keyfx.KeyFx
 import com.theo.keyfx.Section
@@ -97,6 +101,19 @@ fun KeyFxSettingsScreen() {
     LaunchedEffect(Unit) { restorePreview(prefs, schema, edit) }
     DisposableEffect(Unit) {
         onDispose { restorePreview(prefs, schema, edit) }
+    }
+    // Switching apps keeps the screen composed, so a preview must also end when it goes to the background
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP && previewing != null) {
+                previewing = null
+                previewText.value = ""
+                restorePreview(prefs, schema, edit)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     ScrollableList {
@@ -419,7 +436,8 @@ private fun importLab(editor: SharedPreferences.Editor, schema: List<Section>, t
                     editor.putFloat(key, v.toFloat().coerceIn(field.min, field.max))
                 }
                 else -> {
-                    val v = o.optString(field.key, "")
+                    // Values older lab exports still use are converted to what replaced them
+                    val v = Fx.migrate(key, o.optString(field.key, ""))
                     // Colors outside the presets still work, they just don't show as selected
                     if (!v.startsWith("#") && v !in field.values) continue
                     editor.putString(key, v)
