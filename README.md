@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/readme/banner.gif" alt="FXboard: an FX keyboard" width="100%">
+</p>
+
 # FXboard: an FX keyboard, a fork of FUTO Keyboard
 
 [![Latest release](https://img.shields.io/github/v/release/Theo-Erickson/fxboard?label=download)](https://github.com/Theo-Erickson/fxboard/releases/latest)
@@ -8,9 +12,18 @@
 >
 > Please report problems with FXboard [here](https://github.com/Theo-Erickson/fxboard/issues), not to FUTO.
 
+<table>
+<tr>
+<td width="46%"><img src=".github/readme/hero.gif" alt="FXboard: typing, swiping and sending a message with effects on" width="100%"></td>
+<td>
+
 **FXboard is FUTO Keyboard with keyboard effects and a few typing extras.** It keeps everything FUTO Keyboard does (offline, private, swipe typing, voice input, predictions that learn on your phone) and adds keypress effects, a vertical spacebar cursor, and an option to hide the navigation bar. No root needed.
 
-<!-- Media: a GIF of FXboard's effects, e.g. <img src="docs/media/hero.gif" width="360" alt="FXboard keypress effects"> -->
+The clips are recorded in the [keyfx lab](https://theo-erickson.github.io/keyfx/), the browser version of FXboard's effects, with the same settings.
+
+</td>
+</tr>
+</table>
 
 ## Contents
 
@@ -18,6 +31,7 @@
 - [Downloads](#downloads)
 - [Install](#install)
 - [What FXboard adds](#what-fxboard-adds)
+- [See it in action](#see-it-in-action)
 - [Related projects](#related-projects)
 - [FAQ](#faq)
 - [How FXboard follows the FUTO license](#how-fxboard-follows-the-futo-license)
@@ -74,6 +88,28 @@ A keyboard sees everything you type, so please don't install FXboard APKs from a
 The spacebar cursor and navigation bar options are in Settings under **FXboard extras**; effects are under **Keyboard effects**.
 
 **Coming next:** lighting up the predicted word in the suggestion bar, the bloom accent popup and the hide animation. You can try them today in the [keyfx lab](https://theo-erickson.github.io/keyfx/).
+
+## See it in action
+
+Recorded in the [keyfx lab](https://theo-erickson.github.io/keyfx/), the browser version of the effects FXboard draws, with the same settings; the lab's keyboard is a mock of FUTO Keyboard. Each clip runs through a few of the effects in its group. On the phone they're under Settings, **Keyboard effects**.
+
+<table>
+<tr>
+<td align="center"><img src=".github/readme/clip_typing.gif" width="360" alt="Typing: key pop, letter float, heat streak, neighbor wave, sparks"><br><b>Typing</b>: key pop, letter float, heat streak, neighbor wave, sparks</td>
+<td align="center"><img src=".github/readme/clip_delete.gif" width="360" alt="Backspace tap: fire, shatter, laser, disintegrate, glitch"><br><b>Backspace tap</b>: fire, shatter, laser, disintegrate, glitch</td>
+</tr>
+<tr>
+<td align="center"><img src=".github/readme/clip_hold.gif" width="360" alt="Backspace hold: black hole, portal, lava rumble"><br><b>Backspace hold</b>: black hole, portal, lava rumble</td>
+<td align="center"><img src=".github/readme/clip_enter.gif" width="360" alt="Enter: rocket, shockwave, check mark, row wave"><br><b>Enter</b>: rocket, shockwave, check mark, row wave</td>
+</tr>
+<tr>
+<td align="center"><img src=".github/readme/clip_spacebar.gif" width="360" alt="Spacebar: stars, puff and shimmer, then drag it as a trackpad"><br><b>Spacebar</b>: stars, puff and shimmer, then drag it as a trackpad</td>
+<td align="center"><img src=".github/readme/clip_trail.gif" width="360" alt="Swipe trail: comet, lightning, neon tube, ink brush, circuit"><br><b>Swipe trail</b>: comet, lightning, neon tube, ink brush, circuit</td>
+</tr>
+<tr>
+<td align="center"><img src=".github/readme/clip_word.gif" width="360" alt="Swiped word: letter hop three ways, and constellation"><br><b>Swiped word</b>: letter hop three ways, and constellation</td>
+</tr>
+</table>
 
 ## Related projects
 
@@ -164,6 +200,20 @@ You need JDK 21, the Android SDK and NDK `28.2.13676358`. The APK lands in `buil
 | `master` | An exact mirror of FUTO's upstream, used to merge FUTO's updates |
 
 The GitHub Actions workflow in `.github/workflows/build-fxboard.yml` builds every pull request (the APK is attached to the run) and publishes a release for every push to `fxboard`.
+
+### Recording the README media
+
+The GIFs above are recorded with Readmotion from `tools/readmotion/`, playing keyfx's lab in its showcase mode from the `keyfx/` subtree. The effect gallery is shared with keyfx and FX for FUTO Keyboard (`keyfx/tools/readmotion/showcase.py`); `scenes.py` adds FXboard's hero. To record them again:
+
+```
+python tools/readmotion/scenes.py
+readmotion-cli capture tools/readmotion/readmotion.json
+readmotion-cli build tools/readmotion/readmotion.json
+```
+
+`scenes.py` writes the recordings into the config, so edit it rather than the steps in the JSON. `build` also writes full-size MP4s of every clip to `tools/readmotion/.work/full/`.
+
+The hero is meant to end on a phone recording of FXboard's own Keyboard effects settings, which the lab can't show. That recording is still to do: [`tools/readmotion/phone/TODO.md`](tools/readmotion/phone/TODO.md) says what to record and how to add it.
 
 ### Where FXboard's code lives
 
