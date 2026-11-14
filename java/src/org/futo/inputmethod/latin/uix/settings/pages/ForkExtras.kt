@@ -34,6 +34,12 @@ val ForkExtrasMenu = UserSettingsMenu(
             default = { remember { Settings.getInstance().current.mSpacebarVerticalCursor } },
         ),
         userSettingToggleSharedPrefs(
+            title = R.string.fork_spacebar_select_title,
+            subtitle = R.string.fork_spacebar_select_subtitle,
+            key = Settings.PREF_SPACEBAR_SELECT_BUTTON,
+            default = { remember { Settings.getInstance().current.mSpacebarSelectButton } },
+        ),
+        userSettingToggleSharedPrefs(
             title = R.string.fork_hide_nav_bar_title,
             subtitle = R.string.fork_hide_nav_bar_subtitle,
             key = Settings.PREF_HIDE_IME_NAV_BAR,

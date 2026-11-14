@@ -128,6 +128,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
 
     // Fork: keyfx, the effects library (see KeyFxHost)
     private final KeyFxHost mKeyFx;
+    // Fork: the spacebar trackpad's Select button (see TrackpadSelectButton)
+    private final TrackpadSelectButton mTrackpadSelect;
     // Stuff to draw language name on spacebar.
     private final int mLanguageOnSpacebarFinalAlpha;
     private ObjectAnimator mLanguageOnSpacebarFadeoutAnimator;
@@ -193,6 +195,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         // Fork: keyfx draws in the window's overlay once the view is attached (see KeyFxHost)
         mKeyFx = new KeyFxHost(this);
         mKeyFxHost = mKeyFx;
+        mTrackpadSelect = new TrackpadSelectButton(this); // Fork
 
         final DrawingPreviewPlacerView drawingPreviewPlacerView =
                 new DrawingPreviewPlacerView(context, attrs);
@@ -412,6 +415,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         // Fork: effects follow the theme accent (the swipe trail color) and the new keys
         final Integer accent = mDrawableProvider.getColor(R.styleable.MainKeyboardView_gestureTrailColor);
         mKeyFx.setKeyboard(keyboard, accent != null ? accent : Color.WHITE);
+        mTrackpadSelect.setKeyboard(keyboard, accent != null ? accent : Color.WHITE); // Fork
 
         final int keyHeight = keyboard.mMostCommonKeyHeight - keyboard.mVerticalGap;
         mLanguageOnSpacebarTextSize = Math.min(keyHeight, keyboard.mMostCommonKeyWidth) * mLanguageOnSpacebarTextRatio;
@@ -605,6 +609,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         super.onAttachedToWindow();
         installPreviewPlacerView();
         mKeyFx.attach(); // Fork
+        mTrackpadSelect.attach(); // Fork
     }
 
     @Override
@@ -612,6 +617,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         super.onDetachedFromWindow();
         mDrawingPreviewPlacerView.removeAllViews();
         mKeyFx.detach(); // Fork
+        PointerTracker.endTrackpadSelect(); // Fork
+        mTrackpadSelect.detach(); // Fork
     }
 
     // Implements {@link DrawingProxy@showMoreKeysKeyboard(Key,PointerTracker)}.
@@ -750,6 +757,7 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         mSlidingKeyInputDrawingPreview.dismissSlidingKeyInputPreview();
         PointerTracker.dismissAllMoreKeysPanels();
         PointerTracker.cancelAllPointerTrackers();
+        PointerTracker.endTrackpadSelect(); // Fork
     }
 
     public void closing() {

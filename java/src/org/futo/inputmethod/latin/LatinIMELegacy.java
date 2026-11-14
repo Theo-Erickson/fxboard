@@ -655,6 +655,34 @@ public class LatinIMELegacy implements KeyboardActionListener,
         }
     }
 
+    // Fork: the spacebar trackpad's Select button was used. Moving zero characters with select on
+    // commits any composing word and keeps the cursor or selection exactly where it is.
+    @Override
+    public void onSelectPointerStart() {
+        mImeManager.getActiveIME(mSettings.getCurrent()).onMovePointer(0, false, true);
+    }
+
+    // Fork: extends the selection with shift + arrow keys. The editor keeps the anchor, so the
+    // selection grows from where the cursor was in every direction, even back past the anchor.
+    @Override
+    public void onMoveSelectPointer(int dx, int dy) {
+        if (dx == 0 && dy == 0) return;
+        final int keyCode = dy != 0
+                ? (dy < 0 ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN)
+                : (dx < 0 ? KeyEvent.KEYCODE_DPAD_LEFT : KeyEvent.KEYCODE_DPAD_RIGHT);
+        final int count = Math.abs(dy != 0 ? dy : dx);
+        for (int i = 0; i < count; i++) {
+            final Event event = Event.createDownUpKeyEvent(keyCode, KeyEvent.META_SHIFT_ON);
+            mImeManager.getActiveIME(mSettings.getCurrent()).onEvent(event);
+        }
+
+        final MainKeyboardView view = mKeyboardSwitcher.getMainKeyboardView();
+        if (view != null && mSettings.getCurrent().mVibrateOn
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            view.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
+        }
+    }
+
     @Override
     public void onMoveDeletePointer(int steps) {
         mImeManager.getActiveIME(

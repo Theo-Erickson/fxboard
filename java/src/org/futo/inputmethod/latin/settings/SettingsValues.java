@@ -110,6 +110,7 @@ public class SettingsValues {
     public final int mSpacebarHoldMode;
     // Fork additions, see Settings.PREF_SPACEBAR_VERTICAL_CURSOR and friends
     public final boolean mSpacebarVerticalCursor;
+    public final boolean mSpacebarSelectButton;
     public final boolean mHideImeNavBar;
     public final int mBackspaceMode;
     public final int mBackspaceModeHold;
@@ -215,6 +216,7 @@ public class SettingsValues {
 
         // Fork additions: vertical cursor and nav bar hiding default on
         mSpacebarVerticalCursor = prefs.getBoolean(Settings.PREF_SPACEBAR_VERTICAL_CURSOR, true);
+        mSpacebarSelectButton = prefs.getBoolean(Settings.PREF_SPACEBAR_SELECT_BUTTON, true);
         mHideImeNavBar = prefs.getBoolean(Settings.PREF_HIDE_IME_NAV_BAR, true);
 
         mBackspaceMode = prefs.getInt(Settings.PREF_BACKSPACE_MODE, Settings.BACKSPACE_MODE_CHARACTERS);

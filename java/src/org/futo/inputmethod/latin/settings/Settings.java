@@ -140,6 +140,8 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     // Fork additions (Theo's FUTO fork). Kept together so upstream merges stay simple.
     /** Dragging the spacebar up or down moves the cursor between lines. */
     public static final String PREF_SPACEBAR_VERTICAL_CURSOR = "pref_fork_spacebar_vertical_cursor";
+    /** While the spacebar moves the cursor, a button on the bottom-right key switches to selecting. */
+    public static final String PREF_SPACEBAR_SELECT_BUTTON = "pref_fork_spacebar_select_button";
     /** Asks the system to hide the IME navigation bar (collapse arrow + keyboard switcher). */
     public static final String PREF_HIDE_IME_NAV_BAR = "pref_fork_hide_ime_nav_bar";
 

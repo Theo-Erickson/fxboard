@@ -162,6 +162,13 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
     private boolean mProgressReported = false;
     private boolean mSpacebarLongPressed = false;
 
+    // Fork: spacebar trackpad selection (see TrackpadSelectButton). One trackpad at a time, so static:
+    // the spacebar pointer showing the Select button, whether it is selecting, and a second finger
+    // resting on the button, whose touches no key should see.
+    private static PointerTracker sTrackpadOwner;
+    private static boolean sTrackpadSelecting;
+    private static int sSelectButtonPointerId = -1;
+
     // true if keyboard layout has been changed.
     private boolean mKeyboardLayoutHasBeenChanged;
 
@@ -624,6 +631,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 if (shouldIgnoreOtherPointers && id != mPointerId) {
                     continue;
                 }
+                if (id == sSelectButtonPointerId) continue; // Fork: a finger on the Select button
                 final int x = (int)me.getX(index);
                 final int y = (int)me.getY(index);
                 final PointerTracker tracker = getPointerTracker(id);
@@ -634,6 +642,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         final int index = me.getActionIndex();
         final int x = (int)me.getX(index);
         final int y = (int)me.getY(index);
+        // Fork: another finger tapping the trackpad's Select button switches the drag to selecting.
+        // The touch goes no further, so the key under the button never types and the drag carries on.
+        if (handleSelectButtonTouch(action, x, y)) return;
         switch (action) {
         case MotionEvent.ACTION_DOWN:
         case MotionEvent.ACTION_POINTER_DOWN:
@@ -648,6 +659,75 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             break;
         }
     }
+
+    // region Fork: spacebar trackpad selection
+
+    /** Returns true when this touch belongs to the Select button and must go no further. */
+    private boolean handleSelectButtonTouch(final int action, final int x, final int y) {
+        switch (action) {
+        case MotionEvent.ACTION_DOWN:
+        case MotionEvent.ACTION_POINTER_DOWN: {
+            final TrackpadSelectButton button = TrackpadSelectButton.getActive();
+            if (sTrackpadOwner == null || sTrackpadOwner == this
+                    || button == null || !button.contains(x, y)) {
+                return false;
+            }
+            sSelectButtonPointerId = mPointerId;
+            sTrackpadOwner.startTrackpadSelecting(false, 0, 0);
+            return true;
+        }
+        case MotionEvent.ACTION_UP:
+        case MotionEvent.ACTION_POINTER_UP:
+            if (mPointerId != sSelectButtonPointerId) return false;
+            sSelectButtonPointerId = -1;
+            return true;
+        case MotionEvent.ACTION_CANCEL:
+            sSelectButtonPointerId = -1;
+            return false;
+        }
+        return false;
+    }
+
+    /** The spacebar is moving the cursor: offer the Select button. */
+    private void showTrackpadSelect() {
+        if (sTrackpadOwner == this) return;
+        if (!Settings.getInstance().getCurrent().mSpacebarSelectButton) return;
+        final TrackpadSelectButton button = TrackpadSelectButton.getActive();
+        if (button == null) return;
+        endTrackpadSelect(); // a stale owner, should one be left behind
+        sTrackpadOwner = this;
+        sTrackpadSelecting = false;
+        button.show();
+    }
+
+    /**
+     * From now on the drag extends a selection from where the cursor is. A finger sliding onto
+     * the button rebases the drag at (x, y), so getting there does not count as selecting.
+     */
+    private void startTrackpadSelecting(final boolean rebase, final int x, final int y) {
+        if (sTrackpadOwner != this || sTrackpadSelecting) return;
+        sTrackpadSelecting = true;
+        if (rebase) {
+            mStartX = x;
+            mStartY = y;
+        }
+        // Releasing now must neither type a space nor skip the end-of-drag handling
+        mCursorMoved = true;
+        sTimerProxy.cancelKeyTimersOf(this);
+        final TrackpadSelectButton button = TrackpadSelectButton.getActive();
+        if (button != null) button.setSelecting(true);
+        sListener.onSelectPointerStart();
+    }
+
+    /** The drag ended or was cancelled: hide the button. The selection stays as it is. */
+    public static void endTrackpadSelect() {
+        sTrackpadOwner = null;
+        sTrackpadSelecting = false;
+        final TrackpadSelectButton button = TrackpadSelectButton.getActive();
+        if (button != null) button.hide();
+    }
+
+    // endregion
 
     private void onDownEvent(final int x, final int y, final long eventTime,
             final KeyDetector keyDetector) {
@@ -1000,7 +1080,21 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                         // Fork: vertical spacebar cursor. Whichever axis the finger has travelled
                         // further on wins each step, and drift on the other axis is discarded, so a
                         // mostly-vertical drag does not nudge the cursor sideways (and vice versa).
-                        final int verticalSteps = settingsValues.mSpacebarVerticalCursor
+                        // Fork: sliding onto the Select button switches the drag to selecting
+                        final boolean selecting;
+                        if (sTrackpadOwner == this) {
+                            final TrackpadSelectButton button = TrackpadSelectButton.getActive();
+                            if (!sTrackpadSelecting && button != null && button.contains(x, y)) {
+                                startTrackpadSelecting(true, x, y);
+                                steps = 0;
+                            }
+                            selecting = sTrackpadSelecting;
+                        } else {
+                            selecting = false;
+                        }
+
+                        // Selecting always follows lines too: it is meant to work in every direction
+                        final int verticalSteps = settingsValues.mSpacebarVerticalCursor || selecting
                                 ? (y - mStartY) / sPointerVerticalStep : 0;
                         final boolean verticalWins = verticalSteps != 0
                                 && Math.abs(y - mStartY) > Math.abs(x - mStartX);
@@ -1011,15 +1105,19 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                             mCursorMoved = true;
                             mStartY += verticalSteps * sPointerVerticalStep;
                             mStartX = x;
-                            sListener.onMoveVerticalPointer(verticalSteps);
+                            if (selecting) sListener.onMoveSelectPointer(0, verticalSteps); // Fork
+                            else sListener.onMoveVerticalPointer(verticalSteps);
                             fxStepY = verticalSteps; // Fork
                         } else if(steps != 0) {
                             mCursorMoved = true;
                             mStartX += steps * pointerStep;
                             mStartY = y;
-                            sListener.onMovePointer(steps);
+                            if (selecting) sListener.onMoveSelectPointer(steps, 0); // Fork
+                            else sListener.onMovePointer(steps);
                             fxStepX = steps; // Fork
                         }
+                        // Fork: the spacebar is moving the cursor, so offer selecting
+                        if (mCursorMoved) showTrackpadSelect();
                         // Fork: keyfx's spacebar trackpad follows the finger once the cursor moves
                         if (mCursorMoved) {
                             final KeyFxHost fxHost = KeyFxHost.getActive();
@@ -1174,6 +1272,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             sListener.onSwipeLanguageReleased();
             mProgressReported = false;
         }
+        if (sTrackpadOwner == this) endTrackpadSelect(); // Fork: the selection, if any, stays
         if(mCursorMoved && currentKey != null && currentKey.getCode() == Constants.CODE_DELETE) {
             sListener.onUpWithDeletePointerActive();
         } else if(mCursorMoved) {
@@ -1271,6 +1370,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 mStartX = mLastX;
                 mStartY = mLastY;
                 sListener.onMovingCursorLockEvent(true);
+                showTrackpadSelect(); // Fork: holding the spacebar opens the trackpad
                 return;
             }else if(spacebarMode == Settings.SPACEBAR_MODE_OFF) {
                 return;
@@ -1321,6 +1421,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         cancelAllPointerTrackers();
         sPointerTrackerQueue.releaseAllPointers(eventTime);
         onCancelEventInternal();
+        endTrackpadSelect(); // Fork
     }
 
     private void onCancelEventInternal() {

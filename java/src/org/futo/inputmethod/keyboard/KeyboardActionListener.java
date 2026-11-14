@@ -110,6 +110,18 @@ public interface KeyboardActionListener {
      */
     default void onMoveVerticalPointer(int steps) {}
 
+    /**
+     * Fork: the spacebar trackpad switched to selecting. Called once, before the first
+     * {@link #onMoveSelectPointer}, so any word being composed is committed first.
+     */
+    default void onSelectPointerStart() {}
+
+    /**
+     * Fork: extends the selection while the spacebar trackpad is selecting.
+     * @param dx characters, negative is left. @param dy lines, negative is up.
+     */
+    default void onMoveSelectPointer(int dx, int dy) {}
+
     public void onUpWithDeletePointerActive();
     public void onUpWithPointerActive();
     public void onMovingCursorLockEvent(boolean canMoveCursor);

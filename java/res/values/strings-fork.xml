@@ -7,6 +7,10 @@
     <string name="fork_settings_cursor_section" translatable="false">Cursor and navigation bar</string>
     <string name="fork_spacebar_vertical_title" translatable="false">Drag spacebar up and down to change lines</string>
     <string name="fork_spacebar_vertical_subtitle" translatable="false">Works alongside the normal left and right cursor drag. Only multi-line text fields respond.</string>
+    <string name="fork_spacebar_select_title" translatable="false">Select button while dragging the spacebar</string>
+    <string name="fork_spacebar_select_subtitle" translatable="false">While the spacebar moves the cursor, a Select button appears on the bottom-right key. Slide onto it or tap it with another finger, then keep dragging to select text in any direction.</string>
+    <string name="fork_trackpad_select" translatable="false">Select</string>
+    <string name="fork_trackpad_selecting" translatable="false">Selecting</string>
     <string name="fork_hide_nav_bar_title" translatable="false">Hide keyboard navigation bar</string>
     <string name="fork_hide_nav_bar_subtitle" translatable="false">Removes the down arrow and keyboard switcher below the keys. Requires Android 15 or newer.</string>
 
