@@ -69,6 +69,12 @@ fun DevEditTextVariationsScreen(navController: NavHostController = rememberNavCo
     ScrollableList {
         ScreenTitle("Text Edit Variations", showBack = true, navController)
 
+        // Fork: a field that asks not to be learned from, like a private browser tab, for keyfx's privacy mode
+        TextEdit("incognito text",
+            EditorInfo.TYPE_CLASS_TEXT,
+            EditorInfo.IME_ACTION_DONE or EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+        )
+
         TextEdit("multi lines none",
             EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE or EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT,
             EditorInfo.IME_ACTION_UNSPECIFIED

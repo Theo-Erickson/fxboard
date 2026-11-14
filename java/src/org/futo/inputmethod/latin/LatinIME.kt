@@ -62,7 +62,6 @@ import org.futo.inputmethod.engine.IMEManager
 import org.futo.inputmethod.engine.general.WordLearner
 import org.futo.inputmethod.keyboard.FxText
 import org.futo.inputmethod.keyboard.KeyFxHost
-import com.theo.keyfx.KeyFx
 import org.futo.inputmethod.latin.SuggestedWords.SuggestedWordInfo
 import org.futo.inputmethod.latin.common.Constants
 import org.futo.inputmethod.latin.settings.Settings
@@ -637,8 +636,8 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         lifecycleScope.launch { uixManager.showUpdateNoticeIfNeeded() }
         updateColorsIfDynamicChanged()
         uixManager.updateEmojiTranslationsIfNeeded()
-        // Fork: no keyfx effects in password fields; backspace effects start at the text
-        KeyFxHost.privateField = KeyFx.isPrivateInput(info?.inputType ?: 0)
+        // Fork: no keyfx effects in password or incognito fields; backspace effects start at the text
+        KeyFxHost.setInputField(info)
         FxText.watchCursor(currentInputConnection)
     }
 
@@ -932,7 +931,7 @@ class LatinIME : InputMethodServiceCompose(), LatinIMELegacy.SuggestionStripCont
         val currentIC = currentInputConnection
         currentIC?.requestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE)
         // Fork: in-app fields have their own type; the request above turns off keyfx's cursor monitoring
-        KeyFxHost.privateField = KeyFx.isPrivateInput((editorInfo ?: currentInputEditorInfo)?.inputType ?: 0)
+        KeyFxHost.setInputField(editorInfo ?: currentInputEditorInfo)
         FxText.watchCursor(currentIC)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

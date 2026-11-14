@@ -12,6 +12,7 @@ import android.os.Build
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.CursorAnchorInfo
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import com.theo.keyfx.FxHost
 import com.theo.keyfx.FxKey
@@ -29,13 +30,17 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
         var active: KeyFxHost? = null
             private set
 
-        /** Whether the field being typed in is a password field, where keyfx stays off. */
+        // The field being typed in, for keyfx's privacy mode (off in password and incognito fields)
+        private var inputType = 0
+        private var imeOptions = 0
+
+        /** Tells keyfx about the field input started in, so it can stay off in private ones. */
         @JvmStatic
-        var privateField = false
-            set(value) {
-                field = value
-                active?.fx?.setPrivateField(value)
-            }
+        fun setInputField(info: EditorInfo?) {
+            inputType = info?.inputType ?: 0
+            imeOptions = info?.imeOptions ?: 0
+            active?.fx?.setInputField(inputType, imeOptions)
+        }
 
         // Touch points kept while waiting to learn whether a touch is a swipe
         private const val SWIPE_BUFFER_MAX = 400
@@ -93,7 +98,7 @@ class KeyFxHost(private val view: MainKeyboardView) : FxHost {
         }
         active = this
         fx.setEnabled(animationsOn())
-        fx.setPrivateField(privateField)
+        fx.setInputField(inputType, imeOptions)
         updateLayout()
     }
 

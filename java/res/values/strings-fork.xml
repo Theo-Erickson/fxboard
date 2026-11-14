@@ -21,6 +21,9 @@
     <string name="manual_update_downloads_url" translatable="false">https://keyboard.futo.tech/#downloads</string>
 
     <string name="keyfx_settings_title" translatable="false">Keyboard effects</string>
+    <string name="action_privacy_mode_title" translatable="false">Privacy Mode</string>
+    <string name="action_privacy_mode_on" translatable="false">Privacy mode on: keyboard effects are off</string>
+    <string name="action_privacy_mode_off" translatable="false">Privacy mode off: keyboard effects are back</string>
     <string name="keyfx_settings_subtitle" translatable="false">Key pops, floating letters, swipe trails and more</string>
     <string name="keyfx_test_field_hint" translatable="false">Type or swipe here to try your settings</string>
     <string name="keyfx_import" translatable="false">Import</string>
